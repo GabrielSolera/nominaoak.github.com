@@ -237,9 +237,14 @@
       <div class="grid">
         <div>
           <label>Nombre</label>
-          <input type="text" name="nombre" id="nombre" list="nombres" />
-          <datalist id="nombres"></datalist>
+          <select id="nombre">
+            <option value="">Seleccione colaborador</option>
+          </select>
         </div>
+    <!-- Campos ocultos para datos de colaborador que se llenan automáticamente -->
+    <input type="hidden" id="correoEmpleado" name="correoEmpleado">
+    <input type="hidden" id="cedulaEmpleado" name="cedulaEmpleado">
+    <input type="hidden" id="restauranteEmpleado" name="restauranteEmpleado">
         <div>
           <label>Apellido</label>
           <input type="text" id="apellidoEmpleado" list="historialApellidoEmpleado">
@@ -378,6 +383,57 @@
   </div>
 
   <!-- SCRIPT PRINCIPAL -->
+  <!-- Script para cargar colaboradores desde Google Sheets CSV y autollenar campos -->
+  <script>
+    const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv";
+
+    async function cargarColaboradoresDesdeCsv() {
+      try {
+        const response = await fetch(sheetCsvUrl);
+        const csvText = await response.text();
+        const lines = csvText.trim().split("\n");
+        const rows = lines.map(line => line.split(","));
+
+        const nombreSelect = document.getElementById("nombre");
+        if (!nombreSelect) {
+          console.error("No se encontró el select #nombre");
+          return;
+        }
+
+        for (let i = 1; i < rows.length; i++) {
+          const [nombre, correo, puesto, cedula] = rows[i].map(cell => cell.trim());
+          if (!nombre) continue;
+
+          const option = document.createElement("option");
+          option.value = nombre;
+          option.textContent = nombre;
+          option.dataset.correo = correo;
+          option.dataset.puesto = puesto;
+          option.dataset.cedula = cedula;
+          nombreSelect.appendChild(option);
+        }
+      } catch (error) {
+        console.error("Error cargando colaboradores desde CSV:", error);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      cargarColaboradoresDesdeCsv();
+
+      const selectNombre = document.getElementById("nombre");
+      if (selectNombre) {
+        selectNombre.addEventListener("change", function () {
+          const selected = this.options[this.selectedIndex];
+          if (!selected || !selected.dataset) return;
+          document.getElementById("correoEmpleado").value = selected.dataset.correo || "";
+          document.getElementById("cedulaEmpleado").value = selected.dataset.cedula || "";
+          const campoPuesto = document.getElementById("restauranteEmpleado");
+          if (campoPuesto) campoPuesto.value = selected.dataset.puesto || "";
+        });
+      }
+    });
+  </script>
+
   <script>
     // ====== Cálculo automático de Monto para Horas Extra y Día festivo/Extra ======
     function parseCurrency(value) {
@@ -834,37 +890,6 @@
     }
 </script>
   <!-- Eliminado Flatpickr y funciones relacionadas con calendario de días laborados -->
-  <script>
-    const nombreInput = document.getElementById("nombre");
-
-    nombreInput.addEventListener("change", function () {
-      const valor = nombreInput.value;
-      let anteriores = JSON.parse(localStorage.getItem("nombresGuardados")) || [];
-
-      if (!anteriores.includes(valor)) {
-        anteriores.unshift(valor); // lo pone de primero
-        if (anteriores.length > 6) anteriores.pop(); // máximo 6
-        localStorage.setItem("nombresGuardados", JSON.stringify(anteriores));
-      }
-
-      actualizarDatalist(anteriores);
-    });
-
-    function actualizarDatalist(lista) {
-      const datalist = document.getElementById("nombres");
-      datalist.innerHTML = "";
-      lista.forEach((nombre) => {
-        const option = document.createElement("option");
-        option.value = nombre;
-        datalist.appendChild(option);
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const anteriores = JSON.parse(localStorage.getItem("nombresGuardados")) || [];
-      actualizarDatalist(anteriores);
-    });
-  </script>
   <!-- Script de Google Sign-In y manejo de credenciales -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>
