@@ -555,11 +555,977 @@
         nombreMes = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
       }
       const resultadoHTML = `
+       <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boletas de Pago CR</title>
+  <!-- Fuente Aptos no disponible en Google Fonts; se recomienda Segoe UI como fallback -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    #loginBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #4a148c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    #loginBtn:hover {
+      background-color: #6a1b9a;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .output, .output * {
+        visibility: visible;
+      }
+      .output {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      @page {
+        margin: 0;
+        size: A4;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-after: avoid !important;
+      }
+    }
+    :root {
+      --strawberry-red: #FF4B5F;  /* R255 G75 B95 */
+      --matcha-green: #46C3AF;    /* R70 G195 B175 */
+      --blueberry-blue: #5B94B7;  /* R91 G148 B183 */
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f5ec;
+      background-image: img src="fondo_pago_planill.png" width="80" alt="Logo Oakberry";
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      padding: 30px;
+      color: #333;
+    }
+    /* Estilo específico para el campo de nota/comentario */
+    #nota {
+      font-family: 'Aptos', 'Segoe UI', sans-serif;
+    }
+    h1 {
+      text-align: center;
+      color: #2f006e;
+    }
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 160px;
+    }
+    section {
+      background: #D5C3E8; /* Açaí Purple Light (más claro) */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #2f006e;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 0 auto;
+    }
+    #resultado {
+      display: none;
+      max-width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .pdf-button {
+      text-align: center;
+      display: none;
+    }
+    .step-red {
+      background-color: var(--strawberry-red);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .step-green {
+      background-color: var(--matcha-green);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .step-blue {
+      background-color: var(--blueberry-blue);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Barra de login simplificada con botón pequeño de Google alineado a la derecha -->
+  <div style="text-align: right; padding: 10px;">
+    <div id="g_id_onload"
+         data-client_id="TU_CLIENT_ID_DE_GOOGLE"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="icon"
+         data-shape="circle"
+         data-theme="outline"
+         data-size="small"
+         data-logo_alignment="right">
+    </div>
+  </div>
+
+  <div class="logo">
+    <div style="font-size: 28px; font-weight: bold; color: #4B0082; text-align: center;">OAKBERRY</div>
+  </div>
+  <h1>BOLETAS DE PAGO OAK CENTROAMERICA</h1>
+
+  <input type="hidden" id="nombre_envio" value="Gabriel Solera Mejías">
+  <input type="hidden" id="consecutivo_envio" value="46">
+  <input type="hidden" id="correo_colaborador" value="">
+
+  <!-- FORMULARIO PRINCIPAL -->
+  <form id="boletaForm">
+    <!-- EMPRESA -->
+    <section>
+      <div class="step-red">
+        <h2>PASO 1 DE 3 — Empresa</h2>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Nombre de empresa</label>
+          <select id="empresa" onchange="autocompletarEmpresa()">
+            <option value="">Seleccione...</option>
+            <option value="ACAI OAK RESTAURANTES S.A">ACAI OAK RESTAURANTES S.A</option>
+            <option value="OAKBERRY PANAMA S.A">OAKBERRY PANAMA S.A</option>
+            <option value="OAKBERRY GUATEMALA S.A">OAKBERRY GUATEMALA S.A</option>
+            <option value="OAKBERRY EL SALVADOR S.A">OAKBERRY EL SALVADOR S.A</option>
+          </select>
+        </div>
+        <div>
+          <label for="correo_empresa">Correo electrónico de la empresa</label>
+          <input type="email" id="correo_empresa" list="historialCorreoEmpresa">
+          <datalist id="historialCorreoEmpresa"></datalist>
+        </div>
+        <div>
+          <label>Dirección</label>
+          <input type="text" id="direccionEmpresa" readonly list="historialDireccionEmpresa">
+          <datalist id="historialDireccionEmpresa"></datalist>
+        </div>
+        <div>
+          <label>País</label>
+          <input type="text" id="paisEmpresa" readonly list="historialPaisEmpresa">
+          <datalist id="historialPaisEmpresa"></datalist>
+        </div>
+        <div>
+          <label>Cédula jurídica</label>
+          <input type="text" id="cedulaEmpresa" readonly list="historialCedulaEmpresa">
+          <datalist id="historialCedulaEmpresa"></datalist>
+        </div>
+        <div>
+          <label>Divisa</label>
+          <select id="moneda" disabled>
+            <option value="₡">Colones costarricenses (CRC)</option>
+            <option value="$">Dólares (USD)</option>
+            <option value="Q">Quetzal</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPLEADO -->
+    <section>
+      <div class="step-green">
+        <h2>PASO 2 DE 3 — Empleado</h2>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Nombre</label>
+          <input type="text" name="nombre" id="nombre" list="nombres" />
+          <datalist id="nombres"></datalist>
+        </div>
+        <div>
+          <label>Apellido</label>
+          <input type="text" id="apellidoEmpleado" list="historialApellidoEmpleado">
+          <datalist id="historialApellidoEmpleado"></datalist>
+        </div>
+        <div>
+          <label>Cédula / ID</label>
+          <input type="text" id="idEmpleado" list="historialIdEmpleado" maxlength="12">
+          <datalist id="historialIdEmpleado"></datalist>
+        </div>
+        <div>
+          <label for="correoEmpleado">Correo electrónico del colaborador</label>
+          <input type="email" id="correoEmpleado" name="correoEmpleado" placeholder="correo@ejemplo.com" list="historialCorreoEmpleado">
+          <datalist id="historialCorreoEmpleado"></datalist>
+        </div>
+        <div>
+          <label>Consecutivo: <input type="text" id="consecutivo" placeholder="CR-2025-001"></label>
+        </div>
+      </div>
+      <div>
+        <label>Restaurante en el que labora:
+          <select id="restaurante">
+            <option value="">Seleccione...</option>
+            <option value="Avenida Escazú">Avenida Escazú</option>
+            <option value="Guachipelín">Guachipelín</option>
+            <option value="Aleste (tuk tuk)">Aleste (tuk tuk)</option>
+            <option value="Administración">Administración</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- INGRESOS -->
+    <section>
+      <div class="step-blue">
+        <h2>PASO 3 DE 3 — Ingresos</h2>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Fecha de pago</label>
+          <input type="date" id="fechaPago">
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Salario bruto</label>
+          <input type="text" id="salario" list="historialSalario" inputmode="decimal"
+            class="form-control"
+            oninput="formatNumberInput(this)">
+          <datalist id="historialSalario"></datalist>
+        </div>
+      </div>
+      <!-- Campo de ingreso manual de días laborados -->
+      <div class="form-group">
+        <label for="diasLaborados">Días laborados:</label>
+        <input type="number" id="diasLaborados" min="1" max="31" required>
+      </div>
+        <!-- Horas extra (side-by-side layout) -->
+        <div style="grid-column: 1/-1;">
+          <div style="display: flex; gap: 10px;">
+            <div>
+              <label>Horas extra</label>
+              <input type="number" placeholder="Cantidad" id="horasExtraCantidad">
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <input type="text" placeholder="Monto" id="horasExtraMonto" readonly>
+            </div>
+          </div>
+        </div>
+        <!-- Día festivo / Extra (side-by-side layout) -->
+        <div style="grid-column: 1/-1;">
+          <div style="display: flex; gap: 10px;">
+            <div>
+              <label>Día festivo / Extra</label>
+              <input type="number" placeholder="Cantidad" id="festivoCantidad">
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <input type="text" placeholder="Monto" id="festivoMonto" readonly>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deducciones dinámicas -->
+        <div style="grid-column: 1/-1;">
+          <label>Deducciones</label>
+          <div id="deduccionesContainer"></div>
+          <button type="button" onclick="agregarDeduccion()" style="margin-bottom:10px;">+ Añadir deducción</button>
+          <input type="text" id="deducciones" list="historialDeducciones" inputmode="decimal"
+            class="form-control"
+            oninput="formatNumberInput(this)" style="display:none;">
+          <datalist id="historialDeducciones"></datalist>
+        </div>
+        <!-- Otros Ingresos dinámicas -->
+        <div style="grid-column: 1/-1;">
+          <label>Otros Ingresos</label>
+          <div id="bonificacionesContainer"></div>
+          <button type="button" onclick="agregarBonificacion()" style="margin-bottom:10px;">+ Añadir bonificación</button>
+          <input type="text" id="otrosIngresos" list="historialBonificaciones" inputmode="decimal"
+            class="form-control"
+            oninput="formatNumberInput(this)" style="display:none;">
+          <datalist id="historialBonificaciones"></datalist>
+        </div>
+      </div>
+      <button type="button" onclick="generarBoleta()">Generar boleta</button>
+    </section>
+  </form>
+
+  <!-- NOTA U OBSERVACIÓN -->
+  <div class="step">
+    <h2>Nota u Observación</h2>
+    <label>Comentario adicional (opcional):</label>
+    <textarea id="nota" rows="3" style="width: 100%; border-radius: 5px; padding: 8px; border: 1px solid #ccc;"></textarea>
+  </div>
+  <!-- RESULTADO -->
+  <div id="boleta">
+    <div id="comprobantePDF">
+      <div id="recibo" class="output" style="background-color:#f9f6f1; margin:0 !important; padding:0 !important; min-height:auto !important; height:auto !important;"></div>
+    </div>
+  </div>
+  <div id="botonPdf" style="display:none; max-width:900px; margin:30px auto 0 auto;">
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="button" onclick="imprimirBoleta()">Imprimir</button>
+      <!-- Campos ocultos requeridos -->
+      <input type="hidden" id="nombre_envio" value="Gabriel Solera Mejías">
+      <input type="hidden" id="consecutivo_envio" value="46">
+      <input type="hidden" id="correoEmpleado" value="colaborador@ejemplo.com"> <!-- Correo real del colaborador -->
+      <!-- Botón -->
+      <button type="button" onclick="enviarBoleta()">Enviar Boleta</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL -->
+  <script>
+    // ====== Cálculo automático de Monto para Horas Extra y Día festivo/Extra ======
+    function parseCurrency(value) {
+      return Number(value.toString().replace(/,/g, ''));
+    }
+
+    function calculateExtrasAndFestivos() {
+      const salarioBrutoInput = document.getElementById('salario');
+      const horasExtrasInput = document.getElementById('horasExtraCantidad');
+      const horasExtrasMontoInput = document.getElementById('horasExtraMonto');
+      const festivoCantidadInput = document.getElementById('festivoCantidad');
+      const festivoMontoInput = document.getElementById('festivoMonto');
+      const diasLaboradosInput = document.getElementById('diasLaborados');
+
+      // Parse grossSalary as number without commas
+      const grossSalary = parseFloat((salarioBrutoInput.value || '0').replace(/,/g, '')) || 0;
+      const extraHoursQty = parseFloat(horasExtrasInput.value) || 0;
+      const festivoQty = parseFloat(festivoCantidadInput.value) || 0;
+      const diasLaborados = parseInt(diasLaboradosInput?.value) || 0;
+
+      // Calcular subsidio diario correctamente (del salario bruto mensual y días laborados)
+      const salarioOrdinario = (grossSalary / 30) * diasLaborados;
+      const dailySubsidy = diasLaborados > 0 ? (salarioOrdinario / diasLaborados) : 0;
+      // Nueva fórmula para horas extra
+      const hourlyRate = dailySubsidy / 8;
+      const overtimePay = extraHoursQty * hourlyRate * 1.5;
+      // Día festivo: festivoMonto = cantidadFestivos * subsidioDiario
+      const festivoMontoCalc = festivoQty * dailySubsidy;
+
+      horasExtrasMontoInput.value = isNaN(overtimePay) ? '' : overtimePay.toLocaleString('en-US');
+      festivoMontoInput.value = isNaN(festivoMontoCalc) ? '' : festivoMontoCalc.toLocaleString();
+    }
+
+    // Attach listeners after DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      const horasExtrasInput = document.getElementById('horasExtraCantidad');
+      const festivoCantidadInput = document.getElementById('festivoCantidad');
+      const salarioBrutoInput = document.getElementById('salario');
+      if (horasExtrasInput) horasExtrasInput.addEventListener('input', calculateExtrasAndFestivos);
+      if (festivoCantidadInput) festivoCantidadInput.addEventListener('input', calculateExtrasAndFestivos);
+      if (salarioBrutoInput) salarioBrutoInput.addEventListener('input', calculateExtrasAndFestivos);
+    });
+    function autocompletarEmpresa() {
+      const empresa = document.getElementById("empresa").value;
+      const pais = document.getElementById("paisEmpresa");
+      // const ciudad = document.getElementById("ciudadEmpresa");
+      const direccion = document.getElementById("direccionEmpresa");
+      const moneda = document.getElementById("moneda");
+      const cedula = document.getElementById("cedulaEmpresa");
+
+      switch (empresa) {
+        case "ACAI OAK RESTAURANTES S.A":
+          pais.value = "Costa Rica";
+          // ciudad.value = "San José";
+          direccion.value = "800 Norte Del Bac, Ruta Nacional Treciaria 310, San José, San Rafael CC Calle Real Guachipelin local #2";
+          moneda.value = "₡";
+          cedula.value = "3 101 902500";
+          break;
+        case "OAKBERRY PANAMA S.A":
+          pais.value = "Panamá";
+          // ciudad.value = "Panamá";
+          direccion.value = "Edificio Scotia Plaza, Piso 11, Avenida Federico Boyd y Calle 51, PO Box 0816-03356, Panamá, República de Panamá.";
+          moneda.value = "$";
+          cedula.value = "155754321-2-2024";
+          break;
+        case "OAKBERRY GUATEMALA S.A":
+          pais.value = "Guatemala";
+          // ciudad.value = "Guatemala";
+          direccion.value = "Diagonal 6, 10-50, zona 10, Edificio Interamericas, Torre Norte, Nivel 8, Oficina 801, Guatemala, Guatemala.";
+          moneda.value = "Q";
+          cedula.value = "0623-200325-115-2";
+          break;
+        case "OAKBERRY EL SALVADOR S.A":
+          pais.value = "El Salvador";
+          // ciudad.value = "San Salvador";
+          direccion.value = "EDIFICIO MILLENIUM PISO 21, OFICINA 28, PASEO GENERAL ESCALÓN, DISTRITO DE SAN SALVADOR, MUNICIPIO DE SAN SALVADOR CENTRO, DEPARTAMENTO DE SAN SALVADOR";
+          moneda.value = "$";
+          cedula.value = "";
+          break;
+        default:
+          pais.value = "";
+          // ciudad.value = "";
+          direccion.value = "";
+          cedula.value = "";
+      }
+    }
+
+    // Formato de colones sin decimales
+    function formatMonto(valor) {
+      return `₡${Number(valor).toLocaleString('es-CR', {
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+      })}`;
+    }
+
+    // Función para generar un número consecutivo almacenado localmente
+    function obtenerConsecutivo() {
+      let consecutivo = localStorage.getItem('consecutivoBoleta');
+      if (!consecutivo) {
+        consecutivo = 1;
+      } else {
+        consecutivo = parseInt(consecutivo) + 1;
+      }
+      localStorage.setItem('consecutivoBoleta', consecutivo);
+      return consecutivo;
+    }
+
+    function generarBoleta() {
+      // DATOS
+      const empresa = document.getElementById("empresa").value || '';
+      const cedulaEmpresa = document.getElementById("cedulaEmpresa").value || '';
+      const nombreColab = (document.getElementById("nombre").value || '') + " " + (document.getElementById("apellidoEmpleado").value || '');
+      const cedulaColab = document.getElementById("idEmpleado").value || '';
+      const fechaPago = document.getElementById("fechaPago").value || '';
+      const diasLaborados = parseInt(document.getElementById("diasLaborados").value) || 0;
+      const salarioBruto = parseFloat(document.getElementById("salario").value.replace(/,/g, '')) || 0;
+      const salarioDiario = salarioBruto / 30;
+      const salarioOrdinario = salarioDiario * diasLaborados;
+      const horasExtra = parseInt(document.getElementById("horasExtraCantidad").value) || 0;
+      const festivos = parseInt(document.getElementById("festivoCantidad").value) || 0;
+      // Cálculo de montos
+      const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
+      const montoFestivo = salarioDiario * festivos;
+      // Deducciones adicionales
+      let totalDeducciones = 0;
+      document.querySelectorAll('.monto-deduccion').forEach(input => {
+        const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+        totalDeducciones += val;
+      });
+      // Recolectar deducciones detalladas con descripción y monto
+      let deduccionesHTML = '';
+      document.querySelectorAll('.deduccion-row').forEach(row => {
+        const descripcion = row.querySelector('.detalle-deduccion')?.value || '';
+        const monto = row.querySelector('.monto-deduccion')?.value || '0';
+        if (descripcion && monto) {
+          deduccionesHTML += `
+            <tr>
+              <td style="padding:4px 5px;">${descripcion}</td>
+              <td style="text-align:center; padding:4px 5px;"></td>
+              <td style="text-align:right; padding:4px 5px;">₡${parseFloat(monto.replace(/,/g, '')).toLocaleString('es-CR')}</td>
+            </tr>
+          `;
+        }
+      });
+      // Bonificaciones/otros ingresos
+      let totalBonificaciones = 0;
+      document.querySelectorAll('.monto-bonificacion').forEach(input => {
+        const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+        totalBonificaciones += val;
+      });
+      // CCSS: Solo salario ordinario, monto extra y monto festivo están sujetos a CCSS (no otros ingresos)
+      const baseCCSS = salarioOrdinario + montoExtra + montoFestivo;
+      const deduccionCCSS = Math.floor(baseCCSS * 0.1067);
+      // Salario neto
+      const salarioNeto = Math.round(salarioOrdinario + montoExtra + montoFestivo + totalBonificaciones - deduccionCCSS - totalDeducciones);
+      // Formato monto
+      function fmt(n) {
+        return `₡${Number(n).toLocaleString("es-CR", {
+          style: "currency",
+          currency: "CRC",
+          maximumFractionDigits: 0,
+          minimumFractionDigits: 0
+        })}`;
+      }
+      // Obtener consecutivo antes de mostrar el resultado
+      const consecutivo = obtenerConsecutivo();
+      // --- HTML DEL COMPROBANTE ---
+      // Se elimina la sección de "Resumen del Pago" (no se muestra)
+      // Se muestra solo la boleta (detalle del colaborador en el PDF)
+      // Determinar periodo de quincena según fecha de pago y nombre del mes dinámico
+      let periodoQuincena = '';
+      let nombreMes = '';
+      if (fechaPago) {
+        const fecha = new Date(fechaPago);
+        const dia = fecha.getDate();
+        periodoQuincena = dia >= 1 && dia <= 15 ? 'Primera Quincena' : 'Segunda Quincena';
+        // Obtener el nombre del mes en español, con la primera letra en mayúscula
+        nombreMes = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fecha);
+        nombreMes = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+      }
+      const resultadoHTML = `
         <div style="max-width:530px; margin:0 auto; font-family:'Segoe UI',sans-serif; background:#fff; border-radius:10px; border:1px solid #ccc; padding:32px 24px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.07); page-break-inside:avoid; min-height:auto; height:auto;">
           <div style="text-align:center; margin-bottom:16px;">
-            <img src="data:image/png;base64,AAAAA..." alt="Logo Oakberry" style="height:70px; margin-bottom:6px;">
+            <img src="Logo.png" alt="Logo Oakberry" style="height:70px; margin-bottom:6px;">
           </div>
           <div style="text-align:center; margin-bottom:18px;">
+            <span style="font-size:22px; font-weight:700; letter-spacing:1px; color:#2f006e;">COMPROBANTE DE PAGO</span>
+          </div>
+          <table style="width:100%; margin-bottom:12px; border:none; font-size:15px;">
+            <tr>
+              <td style="font-weight:600; width:38%;">Empresa:</td>
+              <td style="width:62%;">${empresa}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Cédula jurídica:</td>
+              <td>${cedulaEmpresa}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Colaborador:</td>
+              <td>${nombreColab}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Cédula:</td>
+              <td>${cedulaColab}</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">Fecha de pago:</td>
+              <td>${fechaPago}</td>
+            </tr>
+          </table>
+          <div>
+            <div><strong>Número de Comprobante:</strong> ${consecutivo}</div>
+            <div><strong>Período:</strong> ${periodoQuincena}${nombreMes ? ' de ' + nombreMes : ''}</div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:15px; margin-bottom:18px;">
+            <thead>
+              <tr style="background:#E9E4F3; color:#2f006e; border-top:1px solid #bfaee5; border-bottom:1px solid #bfaee5;">
+                <th style="text-align:left; padding:6px 5px; font-weight:600;">Concepto</th>
+                <th style="text-align:center; padding:6px 5px; font-weight:600;">Fecha</th>
+                <th style="text-align:right; padding:6px 5px; font-weight:600;">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:4px 5px;">Salario Ordinario (${(document.getElementById("diasLaborados").value || 0).toString().replace('.', ',')} días)</td>
+                <td style="text-align:center; padding:4px 5px;">${fechaPago}</td>
+                <td style="text-align:right; padding:4px 5px;">₡${Math.round(salarioOrdinario).toLocaleString('es-CR')}</td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px;">Horas Extra</td>
+                <td style="text-align:center; padding:4px 5px;">${horasExtra > 0 ? fechaPago : ''}</td>
+                <td style="text-align:right; padding:4px 5px;">₡${Math.round(montoExtra).toLocaleString('es-CR')}</td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px;">Día Festivo / Extra</td>
+                <td style="text-align:center; padding:4px 5px;">${festivos > 0 ? fechaPago : ''}</td>
+                <td style="text-align:right; padding:4px 5px;">₡${Math.round(montoFestivo).toLocaleString('es-CR')}</td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px;">Otros Ingresos</td>
+                <td style="text-align:center; padding:4px 5px;">${totalBonificaciones > 0 ? fechaPago : ''}</td>
+                <td style="text-align:right; padding:4px 5px;">₡${Math.round(totalBonificaciones).toLocaleString('es-CR')}</td>
+              </tr>
+              <tr>
+                <td colspan="3" style="padding:0 5px 4px 5px;">
+                  <small>*Otros ingresos no están sujetos a deducciones de ley</small>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">Salario bruto total</td>
+                <td style="padding:4px 5px; border-top:1px solid #bfaee5;"></td>
+                <td style="text-align:right; padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">
+                  ₡${Math.round(salarioOrdinario + montoExtra + montoFestivo + totalBonificaciones).toLocaleString('es-CR')}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px;">Deducciones ley (CCSS 10.67%)</td>
+                <td style="text-align:center; padding:4px 5px;"></td>
+                <td style="text-align:right; padding:4px 5px;">₡${Math.round(deduccionCCSS).toLocaleString('es-CR')}</td>
+              </tr>
+              ${deduccionesHTML}
+              <tr>
+                <td style="padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">Salario neto total</td>
+                <td style="padding:4px 5px; border-top:1px solid #bfaee5;"></td>
+                <td style="text-align:right; padding:4px 5px; font-weight:700; border-top:1px solid #bfaee5; color:#2f006e;">
+                  ₡${Math.round(salarioNeto).toLocaleString('es-CR')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- Área de firma alineada más a la izquierda -->
+          <div style="margin-top: 0px; margin-bottom: 30px;">
+            <p style="text-align: left; padding-left: 40px;"><strong>Firma de recibido:</strong></p>
+            <br><br>
+          </div>
+          <!-- Nota debajo del borde inferior izquierdo del comprobante -->
+          <div style="text-align: left; padding-left: 20px; margin-top: 10px;">
+          </div>
+        </div>
+      `;
+      const resultadoDiv = document.getElementById("recibo");
+      resultadoDiv.innerHTML = resultadoHTML;
+      // Agregar nota si existe (NO DUPLICAR fuera del cuadro principal, solo dentro del cuadro)
+      const nota = document.getElementById('nota').value;
+      if (nota) {
+        // Para mantener la fuente "Aptos" o "Segoe UI" como fallback:
+        const notaHtml = `<div style="text-align:left; font-family:'Aptos','Segoe UI',sans-serif; margin-top:8px;"><strong>Nota:</strong> ${nota}</div>`;
+        // Insertar antes del último </div> del resultadoHTML (que es el cuadro principal)
+        resultadoDiv.innerHTML = resultadoDiv.innerHTML.replace(/<\/div>\s*$/, notaHtml + '</div>');
+      }
+      resultadoDiv.style.display = "block";
+      document.getElementById("botonPdf").style.display = "block";
+    }
+    // Deducciones y bonificaciones dinámicas
+    function agregarDeduccion() {
+      const container = document.getElementById('deduccionesContainer');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = 'deduccion-row';
+      div.style.display = 'flex';
+      div.style.gap = '8px';
+      div.style.marginBottom = '8px';
+      div.innerHTML = `
+        <input type="text" class="detalle-deduccion" placeholder="Por ejemplo, impuesto sobre la renta, etc." style="flex:2;" list="historialDetalleDeduccion">
+        <input type="date" class="fecha-deduccion" placeholder="Fecha de deducción" style="flex:1.1;" title="Fecha de esta deducción (opcional)">
+        <input type="text" class="monto-deduccion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal" oninput="formatNumberInput(this)">
+        <button type="button" onclick="this.parentNode.remove();">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+    function agregarBonificacion() {
+      const container = document.getElementById('bonificacionesContainer');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = 'bonificacion-row';
+      div.style.display = 'flex';
+      div.style.gap = '8px';
+      div.style.marginBottom = '8px';
+      div.innerHTML = `
+        <input type="text" class="detalle-bonificacion" placeholder="Detalle bonificación" style="flex:2;" list="historialDetalleBonificacion">
+        <input type="text" class="monto-bonificacion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal" oninput="formatNumberInput(this)">
+        <button type="button" onclick="this.parentNode.remove();">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+
+    // Formatea un input numérico con separador de miles (igual que Salario bruto)
+    function formatNumberInput(input) {
+      let value = input.value.replace(/[^\d]/g, ''); // remove non-numeric characters
+      if (!value) {
+        input.value = '';
+        return;
+      }
+      input.value = new Intl.NumberFormat('en-US').format(Number(value));
+    }
+
+    // Inicializar un campo de deducción y uno de bonificación por defecto
+    window.addEventListener('DOMContentLoaded', () => {
+      // ...historial, cédula, etc...
+      fieldsWithHistory.forEach(({id, storageKey}) => {
+        setupFieldHistory(id, storageKey);
+      });
+      document.getElementById('idEmpleado').addEventListener('blur', validarCedula);
+      // Inicializar deducción y bonificación 1
+      agregarDeduccion();
+      agregarBonificacion();
+      // Aplicar formato de miles a los campos principales al cargar
+      ['salario', 'deducciones', 'otrosIngresos'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('input', function() {
+            formatNumberInput(this);
+          });
+        }
+      });
+      // Calcular extras/festivos por si ya hay valores
+      calculateExtrasAndFestivos();
+    });
+
+
+
+    // Enviar por correo usando Apps Script
+    // (Función enviarPorCorreo se reemplazará al final del body)
+
+    // Autocomplete history management
+    const fieldsWithHistory = [
+      {id: 'correoEmpresa', storageKey: 'historialCorreoEmpresa'},
+      {id: 'direccionEmpresa', storageKey: 'historialDireccionEmpresa'},
+      {id: 'paisEmpresa', storageKey: 'historialPaisEmpresa'},
+      {id: 'cedulaEmpresa', storageKey: 'historialCedulaEmpresa'},
+      {id: 'nombreEmpleado', storageKey: 'historialNombreEmpleado'},
+      {id: 'apellidoEmpleado', storageKey: 'historialApellidoEmpleado'},
+      {id: 'idEmpleado', storageKey: 'historialIdEmpleado'},
+      {id: 'correoEmpleado', storageKey: 'historialCorreoEmpleado'},
+      {id: 'salario', storageKey: 'historialSalario'},
+      {id: 'deducciones', storageKey: 'historialDeducciones'},
+      {id: 'bonificaciones', storageKey: 'historialBonificaciones'},
+      {id: 'detalleDeduccion', storageKey: 'historialDetalleDeduccion'},
+      {id: 'detalleBonificacion', storageKey: 'historialDetalleBonificacion'}
+    ];
+
+    function loadHistory(storageKey) {
+      const data = localStorage.getItem(storageKey);
+      if (data) {
+        try {
+          return JSON.parse(data);
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    }
+
+    function saveHistory(storageKey, values) {
+      localStorage.setItem(storageKey, JSON.stringify(values));
+    }
+
+    function updateDatalistOptions(storageKey, datalistId) {
+      const datalist = document.getElementById(datalistId);
+      if (!datalist) return;
+      datalist.innerHTML = '';
+      const values = loadHistory(storageKey);
+      values.forEach(value => {
+        if(value !== '') {
+          const option = document.createElement('option');
+          option.value = value;
+          datalist.appendChild(option);
+        }
+      });
+    }
+
+    function addValueToHistory(storageKey, value) {
+      if (!value) return;
+      let values = loadHistory(storageKey);
+      // Remove duplicates
+      values = values.filter(v => v !== value);
+      // Add to front
+      values.unshift(value);
+      // Keep max 6
+      if (values.length > 6) {
+        values = values.slice(0, 6);
+      }
+      saveHistory(storageKey, values);
+    }
+
+    function setupFieldHistory(fieldId, storageKey) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      updateDatalistOptions(storageKey, storageKey);
+      field.addEventListener('change', () => {
+        // Only add if field is not readonly
+        if (!field.readOnly) {
+          addValueToHistory(storageKey, field.value.trim());
+          updateDatalistOptions(storageKey, storageKey);
+        }
+      });
+    }
+
+    function validarCedula() {
+      const idField = document.getElementById('idEmpleado');
+      const idValue = idField.value.trim();
+
+      if (idValue !== '') {
+        const soloNumeros = idValue.replace(/\D/g, '');
+        if (!(soloNumeros.length === 9 || soloNumeros.length === 11 || soloNumeros.length === 12)) {
+          alert('El número de cédula o DIMEX debe tener 9, 11 o 12 dígitos.');
+          idField.focus();
+        }
+      }
+    }
+
+  // (Función enviarBoletaPorCorreo eliminada)
+</script>
+  <script>
+    function imprimirBoleta() {
+      window.print();
+    }
+</script>
+  <!-- Eliminado Flatpickr y funciones relacionadas con calendario de días laborados -->
+  <script>
+    const nombreInput = document.getElementById("nombre");
+
+    nombreInput.addEventListener("change", function () {
+      const valor = nombreInput.value;
+      let anteriores = JSON.parse(localStorage.getItem("nombresGuardados")) || [];
+
+      if (!anteriores.includes(valor)) {
+        anteriores.unshift(valor); // lo pone de primero
+        if (anteriores.length > 6) anteriores.pop(); // máximo 6
+        localStorage.setItem("nombresGuardados", JSON.stringify(anteriores));
+      }
+
+      actualizarDatalist(anteriores);
+    });
+
+    function actualizarDatalist(lista) {
+      const datalist = document.getElementById("nombres");
+      datalist.innerHTML = "";
+      lista.forEach((nombre) => {
+        const option = document.createElement("option");
+        option.value = nombre;
+        datalist.appendChild(option);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const anteriores = JSON.parse(localStorage.getItem("nombresGuardados")) || [];
+      actualizarDatalist(anteriores);
+    });
+  </script>
+  <!-- Script de Google Sign-In y manejo de credenciales -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function handleCredentialResponse(response) {
+      const responsePayload = parseJwt(response.credential);
+      const email = responsePayload.email;
+      const name = responsePayload.name;
+      alert("Bienvenido " + name + "!");
+
+      // Aquí puedes usar `email` para enviar el PDF o mostrarlo en la UI.
+    }
+
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      return JSON.parse(jsonPayload);
+    }
+  </script>
+  <script>
+    function enviarBoleta() {
+      // Confirmar antes de cualquier acción
+      const email = document.getElementById("correoEmpleado")?.value || "";
+      if (!email || email === "correo@ejemplo.com") {
+        alert("❌ Error: no se encontró un correo válido del colaborador.");
+        return;
+      }
+      if (!confirm(`¿Está seguro que desea enviar la boleta al correo: ${email}?`)) {
+        return; // Cancelar el envío si el usuario presiona "Cancelar"
+      }
+
+      const resultadoHTML = document.getElementById("recibo").outerHTML;
+      // Obtener nombre completo desde los campos del Paso 2
+      const nombreColaborador = document.getElementById("nombre").value || "";
+      const apellidoColaborador = document.getElementById("apellidoEmpleado").value || "";
+      const nombreCompleto = `${nombreColaborador} ${apellidoColaborador}`.trim();
+      const consecutivo = document.getElementById("consecutivo_envio").value;
+
+      // Actualizar el campo oculto #correo_envio si existe
+      const correoEnvioField = document.getElementById("correo_envio");
+      if (correoEnvioField) {
+        correoEnvioField.value = email;
+      }
+
+      const styles = [...document.querySelectorAll("style")].map(s => s.innerHTML).join("\n");
+      // Reemplazar la firma en el HTML
+      let resultadoHTMLFirmado = resultadoHTML.replace(
+        /Saludos,&lt;br&gt;Equipo Oakberry|Saludos,<br>Equipo Oakberry/g,
+        "Saludos,<br>ACAI OAK RESTAURANTES S.A"
+      );
+      const htmlFinal = `
+        <html>
+          <head><style>${styles}</style></head>
+          <body>${resultadoHTMLFirmado}</body>
+        </html>
+      `;
+
+      // Asunto, nombre de archivo y cuerpo del correo usando nombreCompleto
+      const asunto = "Boleta de Pago - " + nombreCompleto;
+      const nombreArchivo = "Boleta_" + consecutivo + "_" + nombreCompleto + ".pdf";
+      const cuerpo = `Estimado/a ${nombreCompleto},\nAdjunto encontrarás tu boleta de pago.`;
+
+      const payload = {
+        html: htmlFinal,
+        nombre: nombreCompleto,
+        consecutivo: consecutivo,
+        email: email,
+        asunto: asunto,
+        nombreArchivo: nombreArchivo,
+        cuerpo: cuerpo
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxAVofjU65K_pU-D2UYgHv31RlLOkL4BsqG940dSMDz3fj6TTKxdMonqmWU3aZ4z1e8/exec", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(payload),
+      })
+      .then(res => res.text())
+      .then(data => {
+        alert("✅ Boleta enviada con éxito");
+      })
+      .catch(err => {
+        console.error("❌ Error al enviar:", err);
+        alert("❌ Error al enviar la boleta");
+      });
+    }
+  </script>
+</body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</html>
+  <script>
+    function handleLogin() {
+      // Puedes personalizar este método para iniciar el login de Google programáticamente
+      // Por ejemplo, mostrar el widget de Google o redirigir/abrir el popup.
+      // Aquí solo se muestra un alert como placeholder.
+      alert("Funcionalidad de login con Google pendiente de implementación.");
+    }
+  </script>
             <span style="font-size:22px; font-weight:700; letter-spacing:1px; color:#2f006e;">COMPROBANTE DE PAGO</span>
           </div>
           <table style="width:100%; margin-bottom:12px; border:none; font-size:15px;">
