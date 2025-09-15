@@ -237,27 +237,29 @@
       <div class="grid">
         <div>
           <label>Nombre</label>
-          <select id="nombre">
-            <option value="">Seleccione colaborador</option>
+          <select id="colaborador" onchange="cargarDatos()">
+            <option value="">Seleccione un colaborador</option>
           </select>
         </div>
     <!-- Campos ocultos para datos de colaborador que se llenan automáticamente -->
-    <input type="hidden" id="correoEmpleado" name="correoEmpleado">
-    <input type="hidden" id="cedulaEmpleado" name="cedulaEmpleado">
-    <input type="hidden" id="restauranteEmpleado" name="restauranteEmpleado">
+    <input type="hidden" id="nombre_envio">
+    <input type="hidden" id="apellido_envio">
+    <input type="hidden" id="cedula_envio">
+    <input type="hidden" id="correo_envio">
+    <input type="hidden" id="restaurante_envio">
         <div>
           <label>Apellido</label>
-          <input type="text" id="apellidoEmpleado" list="historialApellidoEmpleado">
+          <input type="text" id="apellido" list="historialApellidoEmpleado">
           <datalist id="historialApellidoEmpleado"></datalist>
         </div>
         <div>
           <label>Cédula / ID</label>
-          <input type="text" id="idEmpleado" list="historialIdEmpleado" maxlength="12">
+          <input type="text" id="cedula" list="historialIdEmpleado" maxlength="12">
           <datalist id="historialIdEmpleado"></datalist>
         </div>
         <div>
           <label for="correoEmpleado">Correo electrónico del colaborador</label>
-          <input type="email" id="correoEmpleado" name="correoEmpleado" placeholder="correo@ejemplo.com" list="historialCorreoEmpleado">
+          <input type="email" id="correo" name="correoEmpleado" placeholder="correo@ejemplo.com" list="historialCorreoEmpleado">
           <datalist id="historialCorreoEmpleado"></datalist>
         </div>
         <div>
@@ -266,13 +268,7 @@
       </div>
       <div>
         <label>Restaurante en el que labora:
-          <select id="restaurante">
-            <option value="">Seleccione...</option>
-            <option value="Avenida Escazú">Avenida Escazú</option>
-            <option value="Guachipelín">Guachipelín</option>
-            <option value="Aleste (tuk tuk)">Aleste (tuk tuk)</option>
-            <option value="Administración">Administración</option>
-          </select>
+          <input type="text" id="restaurante">
         </label>
       </div>
     </section>
@@ -385,54 +381,67 @@
   <!-- SCRIPT PRINCIPAL -->
   <!-- Script para cargar colaboradores desde Google Sheets CSV y autollenar campos -->
   <script>
-    const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv";
 
-    async function cargarColaboradoresDesdeCsv() {
-      try {
-        const response = await fetch(sheetCsvUrl);
-        const csvText = await response.text();
-        const lines = csvText.trim().split("\n");
-        const rows = lines.map(line => line.split(","));
+    let datos = [];
 
-        const nombreSelect = document.getElementById("nombre");
-        if (!nombreSelect) {
-          console.error("No se encontró el select #nombre");
-          return;
+    fetch(CSV_URL)
+      .then(res => res.text())
+      .then(text => {
+        const filas = text.trim().split("\n").slice(1); // omitir encabezado
+        datos = filas.map(f => {
+          const columnas = f.split(",");
+          return {
+            nombre: columnas[0]?.trim(),
+            apellido: columnas[1]?.trim(),
+            correo: columnas[2]?.trim(),
+            restaurante: columnas[3]?.trim(),
+            cedula: columnas[4]?.trim()
+          };
+        });
+
+        const select = document.getElementById("colaborador");
+        datos.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d.nombre + " " + d.apellido;
+          opt.textContent = d.nombre + " " + d.apellido;
+          select.appendChild(opt);
+        });
+      })
+      .catch(err => console.error("Error cargando CSV:", err));
+
+    function cargarDatos() {
+      const seleccionado = document.getElementById("colaborador").value;
+      const colaborador = datos.find(d => (d.nombre + " " + d.apellido) === seleccionado);
+
+      if (colaborador) {
+        document.getElementById("nombre_envio").value = colaborador.nombre + " " + colaborador.apellido;
+        document.getElementById("apellido_envio").value = colaborador.apellido;
+        document.getElementById("cedula_envio").value = colaborador.cedula;
+        document.getElementById("correo_envio").value = colaborador.correo;
+        document.getElementById("restaurante_envio").value = colaborador.restaurante;
+
+        // Actualiza inputs visibles si existen
+        const visibles = {
+          apellido: colaborador.apellido,
+          cedula: colaborador.cedula,
+          correo: colaborador.correo,
+          restaurante: colaborador.restaurante
+        };
+
+        for (const id in visibles) {
+          const el = document.getElementById(id);
+          if (el) el.value = visibles[id];
         }
-
-        for (let i = 1; i < rows.length; i++) {
-          const [nombre, correo, puesto, cedula] = rows[i].map(cell => cell.trim());
-          if (!nombre) continue;
-
-          const option = document.createElement("option");
-          option.value = nombre;
-          option.textContent = nombre;
-          option.dataset.correo = correo;
-          option.dataset.puesto = puesto;
-          option.dataset.cedula = cedula;
-          nombreSelect.appendChild(option);
-        }
-      } catch (error) {
-        console.error("Error cargando colaboradores desde CSV:", error);
       }
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-      cargarColaboradoresDesdeCsv();
-
-      const selectNombre = document.getElementById("nombre");
-      if (selectNombre) {
-        selectNombre.addEventListener("change", function () {
-          const selected = this.options[this.selectedIndex];
-          if (!selected || !selected.dataset) return;
-          document.getElementById("correoEmpleado").value = selected.dataset.correo || "";
-          document.getElementById("cedulaEmpleado").value = selected.dataset.cedula || "";
-          const campoPuesto = document.getElementById("restauranteEmpleado");
-          if (campoPuesto) campoPuesto.value = selected.dataset.puesto || "";
-        });
-      }
-    });
   </script>
+  <!-- Los campos visibles requeridos para mostrar los datos del colaborador:
+  <input type="text" id="apellido">
+  <input type="text" id="cedula">
+  <input type="text" id="correo">
+  <input type="text" id="restaurante">
+  -->
 
   <script>
     // ====== Cálculo automático de Monto para Horas Extra y Día festivo/Extra ======
