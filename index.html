@@ -348,7 +348,7 @@
           <button type="button" onclick="agregarDeduccion()" style="margin-bottom:10px;">+ Añadir deducción</button>
           <input type="text" id="deducciones" list="historialDeducciones" inputmode="decimal"
             class="form-control"
-            oninput="formatNumberInput(this)" style="display:none;">
+            style="display:none;">
           <datalist id="historialDeducciones"></datalist>
         </div>
         <!-- Otros Ingresos dinámicas -->
@@ -358,7 +358,7 @@
           <button type="button" onclick="agregarBonificacion()" style="margin-bottom:10px;">+ Añadir bonificación</button>
           <input type="text" id="otrosIngresos" list="historialBonificaciones" inputmode="decimal"
             class="form-control"
-            oninput="formatNumberInput(this)" style="display:none;">
+            style="display:none;">
           <datalist id="historialBonificaciones"></datalist>
         </div>
       </div>
@@ -642,6 +642,26 @@
         const val = parseFloat(input.value.replace(/,/g, '')) || 0;
         totalBonificaciones += val;
       });
+      // Recoger también descripción de bonificación si existe
+      document.querySelectorAll('.bonificacion-row').forEach(row => {
+        const descripcion = row.querySelector('.detalle-bonificacion')?.value?.trim();
+        const montoStr = row.querySelector('.monto-bonificacion')?.value?.trim().replace(/,/g, '');
+        const monto = parseFloat(montoStr) || 0;
+        if (descripcion && monto) {
+          otrosIngresosDetalle += `
+            <tr>
+              <td>${descripcion}</td>
+              <td>${fechaHoy}</td>
+              <td style="text-align:right;">₡${monto.toLocaleString('es-CR')}</td>
+            </tr>
+          `;
+        }
+      });
+
+      // ====== BLOQUE: Parsear el campo de otros ingresos manual si existe ======
+      // Eliminar cualquier carácter que no sea número, punto o guion
+      const otrosIngresosRaw = document.getElementById("otrosIngresos")?.value || "";
+      const otrosIngresos = parseFloat(otrosIngresosRaw.replace(/[^\d.-]/g, '')) || 0;
 
       // ====== BLOQUE NUEVO: Recopilar otros ingresos de inputs con clase .otros-ingresos-row ======
       let otrosIngresosDetalle = '';
@@ -664,6 +684,17 @@
           `;
         }
       });
+      // Si hay un valor en el campo manual de otrosIngresos, agréguelo también
+      if (!isNaN(otrosIngresos) && otrosIngresos > 0) {
+        totalOtrosIngresos += otrosIngresos;
+        otrosIngresosDetalle += `
+          <tr>
+            <td>Otros ingresos</td>
+            <td>${fechaHoy}</td>
+            <td style="text-align:right;">₡${otrosIngresos.toLocaleString('es-CR')}</td>
+          </tr>
+        `;
+      }
       // ====== FIN BLOQUE NUEVO ======
 
       // CCSS: Solo salario ordinario, monto extra y monto festivo están sujetos a CCSS (no otros ingresos)
@@ -726,7 +757,9 @@
       const resultadoHTML = `
         <div style="max-width:530px; margin:0 auto; font-family:'Segoe UI',sans-serif; background:#fff; border-radius:10px; border:1px solid #ccc; padding:32px 24px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.07); page-break-inside:avoid; min-height:auto; height:auto;">
           <div style="text-align:center; margin-bottom:18px;">
-            <img src="Logo.png" alt="Logo Oakberry" style="height:70px; display:block; margin:0 auto 6px auto;">
+            <div style="text-align:center; font-size: 30px; font-weight: bold; color: #4B0082; margin-bottom: 8px;">
+              OAKBERRY
+            </div>
             <span style="font-size:22px; font-weight:700; letter-spacing:1px; color:#2f006e;">COMPROBANTE DE PAGO</span>
           </div>
           <table style="width:100%; margin-bottom:12px; border:none; font-size:15px;">
@@ -756,6 +789,7 @@
           <div>
             <div><strong>Número de Comprobante:</strong> ${consecutivo}</div>
             <div><strong>Período:</strong> ${periodoQuincena}${nombreMes ? ' de ' + nombreMes : ''}</div>
+          </div>
           </div>
           <table style="width:100%; border-collapse:collapse; font-size:15px; margin-bottom:18px;">
             <thead>
@@ -853,7 +887,7 @@
       div.innerHTML = `
         <input type="text" class="detalle-deduccion" placeholder="Por ejemplo, impuesto sobre la renta, etc." style="flex:2;" list="historialDetalleDeduccion">
         <input type="date" class="fecha-deduccion" placeholder="Fecha de deducción" style="flex:1.1;" title="Fecha de esta deducción (opcional)">
-        <input type="text" class="monto-deduccion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal" oninput="formatNumberInput(this)" onblur="unformatNumberInput(this)">
+        <input type="text" class="monto-deduccion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal">
         <button type="button" onclick="this.parentNode.remove();">🗑️</button>
       `;
       container.appendChild(div);
@@ -868,7 +902,7 @@
       div.style.marginBottom = '8px';
       div.innerHTML = `
         <input type="text" class="detalle-bonificacion" placeholder="Detalle bonificación" style="flex:2;" list="historialDetalleBonificacion">
-        <input type="text" class="monto-bonificacion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal" oninput="formatNumberInput(this)" onblur="unformatNumberInput(this)">
+        <input type="text" class="monto-bonificacion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal">
         <button type="button" onclick="this.parentNode.remove();">🗑️</button>
       `;
       container.appendChild(div);
@@ -899,26 +933,19 @@
       // Inicializar deducción y bonificación 1
       agregarDeduccion();
       agregarBonificacion();
-      // Aplicar formato de miles a los campos principales al cargar y desenformatear al salir
-      ['salario', 'deducciones', 'otrosIngresos'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('input', function () {
-            formatNumberInput(this);
-          });
-          el.addEventListener('blur', function () {
-            unformatNumberInput(this);
-          });
-        }
-      });
+      // Aplicar formato de miles solo al campo salario al cargar y desenformatear al salir
+      const salarioInput = document.getElementById('salario');
+      if (salarioInput) {
+        salarioInput.addEventListener('input', function () {
+          formatNumberInput(this);
+        });
+        salarioInput.addEventListener('blur', function () {
+          unformatNumberInput(this);
+        });
+      }
       // Calcular extras/festivos por si ya hay valores
       calculateExtrasAndFestivos();
     });
-
-
-
-    // Enviar por correo usando Apps Script
-    // (Función enviarPorCorreo se reemplazará al final del body)
 
     // Autocomplete history management
     const fieldsWithHistory = [
