@@ -327,16 +327,12 @@
             </div>
           </div>
         </div>
-        <!-- Día festivo / Extra (side-by-side layout) -->
+        <!-- Día festivo / Extra (solo campo de cantidad) -->
         <div style="grid-column: 1/-1;">
           <div style="display: flex; gap: 10px;">
             <div>
               <label>Día festivo / Extra</label>
               <input type="number" placeholder="Cantidad" id="festivoCantidad">
-            </div>
-            <div>
-              <label>&nbsp;</label>
-              <input type="text" placeholder="Monto" id="festivoMonto" readonly>
             </div>
           </div>
         </div>
@@ -486,11 +482,11 @@
       const festivoMontoInput = document.getElementById('festivoMonto');
       const diasLaboradosInput = document.getElementById('diasLaborados');
 
-      // Parse grossSalary as number without commas
+      // Parse grossSalary as number without commas (remove all commas)
       const grossSalary = parseFloat((salarioBrutoInput.value || '0').replace(/,/g, '')) || 0;
-      const extraHoursQty = parseFloat(horasExtrasInput.value) || 0;
-      const festivoQty = parseFloat(festivoCantidadInput.value) || 0;
-      const diasLaborados = parseInt(diasLaboradosInput?.value) || 0;
+      const extraHoursQty = parseFloat((horasExtrasInput.value || '0').replace(/,/g, '')) || 0;
+      const festivoQty = parseFloat((festivoCantidadInput.value || '0').replace(/,/g, '')) || 0;
+      const diasLaborados = parseFloat((diasLaboradosInput?.value || '0').replace(/,/g, '')) || 0;
 
       // Calcular subsidio diario correctamente (del salario bruto mensual y días laborados)
       const salarioOrdinario = (grossSalary / 30) * diasLaborados;
@@ -601,24 +597,32 @@
         fechaPago = `${d}/${m}/${a.slice(2)}`;
       }
       // =============================================
-      // Usar parseFloat para admitir decimales
-      const diasLaborados = parseFloat(document.getElementById("diasLaborados").value) || 0;
-      const salarioBruto = parseFloat(
-        (document.getElementById("salario").value || '0').replace(/[^\d.]/g, '')
+      // Usar parseFloat para admitir decimales, quitando cualquier carácter no numérico o separador válido
+      const diasLaborados = parseFloat(
+        (document.getElementById("diasLaborados").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
       ) || 0;
-      console.log("Salario Bruto capturado:", salarioBruto);
-      const salarioDiario = salarioBruto / 30;
+      // Parsear salario quitando cualquier carácter no numérico o separador válido
+      const salario = parseFloat(
+        document.getElementById('salario').value.replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      console.log("Salario Bruto capturado:", salario);
+      const salarioDiario = salario / 30;
       const salarioOrdinario = salarioDiario * diasLaborados;
-      // Permitir decimales en horas extra y festivos
-      const horasExtra = parseFloat(document.getElementById("horasExtraCantidad").value) || 0;
-      const festivos = parseFloat(document.getElementById("festivoCantidad").value) || 0;
+      // Permitir decimales en horas extra y festivos (quitando cualquier carácter no numérico o separador válido)
+      const horasExtra = parseFloat(
+        (document.getElementById("horasExtraCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      const festivos = parseFloat(
+        (document.getElementById("festivoCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
       // Cálculo de montos
       const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
-      const montoFestivo = salarioDiario * festivos;
+      // Día festivo debe pagarse doble por ley en Costa Rica
+      const montoFestivo = (salario / 30) * festivos * 2;
       // Deducciones adicionales
       let totalDeducciones = 0;
       document.querySelectorAll('.monto-deduccion').forEach(input => {
-        const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+        const val = parseFloat((input.value || '0').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
         totalDeducciones += val;
       });
       // Recolectar deducciones detalladas con descripción y monto
@@ -626,12 +630,14 @@
       document.querySelectorAll('.deduccion-row').forEach(row => {
         const descripcion = row.querySelector('.detalle-deduccion')?.value || '';
         const monto = row.querySelector('.monto-deduccion')?.value || '0';
+        // Limpiar caracteres no numéricos antes de parsear
         if (descripcion && monto) {
+          const montoLimpio = parseFloat(monto.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
           deduccionesHTML += `
             <tr>
               <td style="padding:4px 5px;">${descripcion}</td>
               <td style="text-align:center; padding:4px 5px;"></td>
-              <td style="text-align:right; padding:4px 5px;">₡${parseFloat(monto.replace(/,/g, '')).toLocaleString('es-CR')}</td>
+              <td style="text-align:right; padding:4px 5px;">₡${montoLimpio.toLocaleString('es-CR')}</td>
             </tr>
           `;
         }
@@ -639,29 +645,30 @@
       // Bonificaciones/otros ingresos (antiguo)
       let totalBonificaciones = 0;
       document.querySelectorAll('.monto-bonificacion').forEach(input => {
-        const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+        const val = parseFloat((input.value || '0').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
         totalBonificaciones += val;
       });
       // Recoger también descripción de bonificación si existe
       document.querySelectorAll('.bonificacion-row').forEach(row => {
         const descripcion = row.querySelector('.detalle-bonificacion')?.value?.trim();
-        const montoStr = row.querySelector('.monto-bonificacion')?.value?.trim().replace(/,/g, '');
-        const monto = parseFloat(montoStr) || 0;
-        if (descripcion && monto) {
+        const montoStr = row.querySelector('.monto-bonificacion')?.value?.trim();
+        const montoLimpio = parseFloat((montoStr || '').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        if (descripcion && montoLimpio) {
           otrosIngresosDetalle += `
             <tr>
               <td>${descripcion}</td>
               <td>${fechaHoy}</td>
-              <td style="text-align:right;">₡${monto.toLocaleString('es-CR')}</td>
+              <td style="text-align:right;">₡${montoLimpio.toLocaleString('es-CR')}</td>
             </tr>
           `;
         }
       });
 
       // ====== BLOQUE: Parsear el campo de otros ingresos manual si existe ======
-      // Eliminar cualquier carácter que no sea número, punto o guion
+      // Eliminar cualquier carácter que no sea número, punto o coma
       const otrosIngresosRaw = document.getElementById("otrosIngresos")?.value || "";
-      const otrosIngresos = parseFloat(otrosIngresosRaw.replace(/[^\d.-]/g, '')) || 0;
+      // Limpiar cualquier carácter que no sea número, punto o coma, y convertir coma decimal a punto
+      const otrosIngresos = parseFloat(otrosIngresosRaw.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
 
       // ====== BLOQUE NUEVO: Recopilar otros ingresos de inputs con clase .otros-ingresos-row ======
       let otrosIngresosDetalle = '';
@@ -671,15 +678,15 @@
       const otrosIngresosInputs = document.querySelectorAll('.otros-ingresos-row');
       otrosIngresosInputs.forEach(row => {
         const descripcion = row.querySelector('.descripcion-ingreso')?.value.trim();
-        const montoStr = row.querySelector('.monto-ingreso')?.value.trim().replace(/,/g, '');
-        const monto = parseFloat(montoStr) || 0;
-        if (descripcion && monto) {
-          totalOtrosIngresos += monto;
+        const montoStr = row.querySelector('.monto-ingreso')?.value.trim();
+        const montoLimpio = parseFloat((montoStr || '').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        if (descripcion && montoLimpio) {
+          totalOtrosIngresos += montoLimpio;
           otrosIngresosDetalle += `
             <tr>
               <td>${descripcion}</td>
               <td>${fechaHoy}</td>
-              <td style="text-align:right;">₡${monto.toLocaleString('es-CR')}</td>
+              <td style="text-align:right;">₡${montoLimpio.toLocaleString('es-CR')}</td>
             </tr>
           `;
         }
@@ -699,6 +706,7 @@
 
       // CCSS: Solo salario ordinario, monto extra y monto festivo están sujetos a CCSS (no otros ingresos)
       const baseCCSS = salarioOrdinario + montoExtra + montoFestivo;
+      // deduccionCCSS se calcula sobre baseCCSS, redondeando hacia abajo
       const deduccionCCSS = Math.floor(baseCCSS * 0.1067);
       // Salario bruto total incluye otros ingresos
       const salarioBrutoTotal = salarioOrdinario + montoExtra + montoFestivo + totalBonificaciones + totalOtrosIngresos;
@@ -740,7 +748,9 @@
         // Solo mostrar la primera bonificación como principal
         const row = bonificacionRows[0];
         nombreBonificacion = row.querySelector('.detalle-bonificacion')?.value?.trim() || "";
-        montoBonificacion = parseFloat((row.querySelector('.monto-bonificacion')?.value || "0").replace(/,/g, "")) || 0;
+        // Limpiar cualquier carácter no numérico antes de parsear
+        const montoStr = row.querySelector('.monto-bonificacion')?.value || "0";
+        montoBonificacion = parseFloat(montoStr.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
       }
       // --- HTML DEL COMPROBANTE ---
       // Determinar periodo de quincena según fecha de pago y nombre del mes dinámico
