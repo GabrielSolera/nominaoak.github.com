@@ -618,7 +618,7 @@
       // Cálculo de montos
       const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
       // Día festivo debe pagarse doble por ley en Costa Rica
-      const montoFestivo = (salario / 30) * festivos * 2;
+      const montoFestivo = (salario / 30) * festivos * 1;
       // Deducciones adicionales
       let totalDeducciones = 0;
       document.querySelectorAll('.monto-deduccion').forEach(input => {
