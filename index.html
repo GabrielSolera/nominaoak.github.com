@@ -237,8 +237,8 @@
       <div class="grid">
         <div>
           <label>Nombre</label>
-          <select id="colaborador" onchange="cargarDatos()">
-            <option value="">Seleccione un colaborador</option>
+          <select id="colaborador" onchange="cargarDatos()" autocomplete="off">
+            <option value="">Seleccione colaborador...</option>
           </select>
         </div>
     <!-- Campos ocultos para datos de colaborador que se llenan automáticamente -->
@@ -249,17 +249,17 @@
     <input type="hidden" id="restaurante_envio">
         <div>
           <label>Apellido</label>
-          <input type="text" id="apellido" list="historialApellidoEmpleado">
+          <input type="text" id="apellidoEmpleado" list="historialApellidoEmpleado">
           <datalist id="historialApellidoEmpleado"></datalist>
         </div>
         <div>
           <label>Cédula / ID</label>
-          <input type="text" id="cedula" list="historialIdEmpleado" maxlength="12">
+          <input type="text" id="idEmpleado" list="historialIdEmpleado" maxlength="12">
           <datalist id="historialIdEmpleado"></datalist>
         </div>
         <div>
           <label for="correoEmpleado">Correo electrónico del colaborador</label>
-          <input type="email" id="correo" name="correoEmpleado" placeholder="correo@ejemplo.com" list="historialCorreoEmpleado">
+          <input type="email" id="correoEmpleado" name="correoEmpleado" placeholder="correo@ejemplo.com" list="historialCorreoEmpleado">
           <datalist id="historialCorreoEmpleado"></datalist>
         </div>
         <div>
@@ -357,7 +357,7 @@
     <textarea id="nota" rows="3" style="width: 100%; border-radius: 5px; padding: 8px; border: 1px solid #ccc;"></textarea>
   </div>
   <!-- RESULTADO -->
-  <div id="boleta">
+ <div id="boleta">
     <div id="comprobantePDF">
       <div id="recibo" class="output" style="background-color:#f9f6f1; margin:0 !important; padding:0 !important; min-height:auto !important; height:auto !important;">
         <div style="text-align: center; margin-bottom: 10px;">
@@ -379,62 +379,75 @@
   </div>
 
   <!-- SCRIPT PRINCIPAL -->
-  <!-- Script para cargar colaboradores desde Google Sheets CSV y autollenar campos -->
+</body>
   <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv";
-
-    let datos = [];
-
-    fetch(CSV_URL)
-      .then(res => res.text())
-      .then(text => {
-        const filas = text.trim().split("\n").slice(1); // omitir encabezado
-        datos = filas.map(f => {
-          const columnas = f.split(",");
-          return {
-            nombre: columnas[0]?.trim(),
-            apellido: columnas[1]?.trim(),
-            correo: columnas[2]?.trim(),
-            restaurante: columnas[3]?.trim(),
-            cedula: columnas[4]?.trim()
-          };
+    // ====== Script de carga de colaboradores desde Google Sheets y autollenado ======
+    let colaboradoresData = [];
+    function fetchCSVData() {
+      fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv')
+        .then(response => response.text())
+        .then(data => {
+          const rows = data.split('\n').map(row => row.split(','));
+          const headers = rows[0];
+          const dataRows = rows.slice(1);
+          colaboradoresData = dataRows.map(c => ({
+            nombre: c[0]?.trim(),
+            apellido: c[1]?.trim(),
+            cedula: c[2]?.trim(),
+            correo: c[3]?.trim(),
+            restaurante: c[4]?.trim()
+          })).filter(c => c.nombre && c.apellido); // Solo filas válidas
+          const select = document.getElementById("colaborador");
+          if (select) {
+            // Limpiar opciones previas y agregar opción por defecto
+            select.innerHTML = '<option value="">Seleccione colaborador...</option>';
+            colaboradoresData.forEach((c, idx) => {
+              const option = document.createElement("option");
+              option.value = idx; // Usar el índice para referencia rápida
+              option.textContent = `${c.nombre} ${c.apellido}`;
+              option.dataset.nombre = c.nombre;
+              option.dataset.apellido = c.apellido;
+              option.dataset.cedula = c.cedula;
+              option.dataset.correo = c.correo;
+              option.dataset.restaurante = c.restaurante;
+              select.appendChild(option);
+            });
+          }
         });
-
-        const select = document.getElementById("colaborador");
-        datos.forEach(d => {
-          const opt = document.createElement("option");
-          opt.value = d.nombre + " " + d.apellido;
-          opt.textContent = d.nombre + " " + d.apellido;
-          select.appendChild(opt);
-        });
-      })
-      .catch(err => console.error("Error cargando CSV:", err));
+    }
 
     function cargarDatos() {
-      const seleccionado = document.getElementById("colaborador").value;
-      const colaborador = datos.find(d => (d.nombre + " " + d.apellido) === seleccionado);
-
-      if (colaborador) {
-        document.getElementById("nombre_envio").value = colaborador.nombre + " " + colaborador.apellido;
-        document.getElementById("apellido_envio").value = colaborador.apellido;
-        document.getElementById("cedula_envio").value = colaborador.cedula;
-        document.getElementById("correo_envio").value = colaborador.correo;
-        document.getElementById("restaurante_envio").value = colaborador.restaurante;
-
-        // Actualiza inputs visibles si existen
-        const visibles = {
-          apellido: colaborador.apellido,
-          cedula: colaborador.cedula,
-          correo: colaborador.correo,
-          restaurante: colaborador.restaurante
-        };
-
-        for (const id in visibles) {
-          const el = document.getElementById(id);
-          if (el) el.value = visibles[id];
-        }
+      const select = document.getElementById("colaborador");
+      const idx = select.value;
+      if (idx === "" || !colaboradoresData[idx]) {
+        // Limpiar campos si no hay selección
+        document.getElementById("apellidoEmpleado").value = "";
+        document.getElementById("idEmpleado").value = "";
+        document.getElementById("correoEmpleado").value = "";
+        document.getElementById("restaurante").value = "";
+        document.getElementById("nombre_envio").value = "";
+        document.getElementById("apellido_envio").value = "";
+        document.getElementById("cedula_envio").value = "";
+        document.getElementById("correo_envio").value = "";
+        document.getElementById("restaurante_envio").value = "";
+        return;
       }
+      const c = colaboradoresData[idx];
+      document.getElementById("apellidoEmpleado").value = c.apellido || "";
+      document.getElementById("idEmpleado").value = c.cedula || "";
+      document.getElementById("correoEmpleado").value = c.correo || "";
+      document.getElementById("restaurante").value = c.restaurante || "";
+      // Campos ocultos para envío
+      document.getElementById("nombre_envio").value = c.nombre || "";
+      document.getElementById("apellido_envio").value = c.apellido || "";
+      document.getElementById("cedula_envio").value = c.cedula || "";
+      document.getElementById("correo_envio").value = c.correo || "";
+      document.getElementById("restaurante_envio").value = c.restaurante || "";
     }
+
+    window.onload = function () {
+      fetchCSVData();
+    };
   </script>
   <!-- Los campos visibles requeridos para mostrar los datos del colaborador:
   <input type="text" id="apellido">
@@ -554,7 +567,15 @@
       // DATOS
       const empresa = document.getElementById("empresa").value || '';
       const cedulaEmpresa = document.getElementById("cedulaEmpresa").value || '';
-      const nombreColab = (document.getElementById("nombre").value || '') + " " + (document.getElementById("apellidoEmpleado").value || '');
+      // Obtener nombre y apellido desde el select de colaborador si existe, si no, usar campos
+      let nombreColab = '';
+      const colaboradorSelect = document.getElementById("colaborador");
+      if (colaboradorSelect && colaboradoresData.length > 0 && colaboradorSelect.value !== "" && colaboradoresData[colaboradorSelect.value]) {
+        const c = colaboradoresData[colaboradorSelect.value];
+        nombreColab = (c.nombre || '') + " " + (c.apellido || '');
+      } else {
+        nombreColab = (document.getElementById("nombre")?.value || '') + " " + (document.getElementById("apellidoEmpleado").value || '');
+      }
       const cedulaColab = document.getElementById("idEmpleado").value || '';
       const fechaPago = document.getElementById("fechaPago").value || '';
       const diasLaborados = parseInt(document.getElementById("diasLaborados").value) || 0;
@@ -626,6 +647,7 @@
       const resultadoHTML = `
         <div style="max-width:530px; margin:0 auto; font-family:'Segoe UI',sans-serif; background:#fff; border-radius:10px; border:1px solid #ccc; padding:32px 24px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.07); page-break-inside:avoid; min-height:auto; height:auto;">
           <div style="text-align:center; margin-bottom:18px;">
+            <img src="Logo.png" alt="Logo Oakberry" style="height:70px; display:block; margin:0 auto 6px auto;">
             <span style="font-size:22px; font-weight:700; letter-spacing:1px; color:#2f006e;">COMPROBANTE DE PAGO</span>
           </div>
           <table style="width:100%; margin-bottom:12px; border:none; font-size:15px;">
