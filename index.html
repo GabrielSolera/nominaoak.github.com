@@ -945,55 +945,38 @@
   </script>
   <script>
     function enviarBoleta() {
-      // Confirmar antes de cualquier acción
       const email = document.getElementById("correoEmpleado")?.value || "";
-      if (!email || email === "correo@ejemplo.com") {
-        alert("❌ Error: no se encontró un correo válido del colaborador.");
+      const nombre = document.getElementById("nombre_envio")?.value || "";
+      const apellido = document.getElementById("apellido_envio")?.value || "";
+      const nombreCompleto = `${nombre} ${apellido}`.trim();
+      const consecutivo = document.getElementById("consecutivo_envio")?.value || "000";
+      const htmlRaw = document.getElementById("recibo")?.outerHTML || "";
+
+      if (!email || !htmlRaw || !nombreCompleto) {
+        alert("❌ Faltan datos para enviar la boleta.");
         return;
       }
+
       if (!confirm(`¿Está seguro que desea enviar la boleta al correo: ${email}?`)) {
-        return; // Cancelar el envío si el usuario presiona "Cancelar"
-      }
-
-      const resultadoHTML = document.getElementById("recibo").outerHTML;
-      // Obtener nombre completo desde los campos del Paso 2
-      const nombreColaborador = document.getElementById("nombre").value || "";
-      const apellidoColaborador = document.getElementById("apellidoEmpleado").value || "";
-      const nombreCompleto = `${nombreColaborador} ${apellidoColaborador}`.trim();
-      const consecutivo = document.getElementById("consecutivo_envio").value;
-
-      // Actualizar el campo oculto #correo_envio si existe
-      const correoEnvioField = document.getElementById("correo_envio");
-      if (correoEnvioField) {
-        correoEnvioField.value = email;
+        return;
       }
 
       const styles = [...document.querySelectorAll("style")].map(s => s.innerHTML).join("\n");
-      // Reemplazar la firma en el HTML
-      let resultadoHTMLFirmado = resultadoHTML.replace(
-        /Saludos,&lt;br&gt;Equipo Oakberry|Saludos,<br>Equipo Oakberry/g,
-        "Saludos,<br>ACAI OAK RESTAURANTES S.A"
-      );
       const htmlFinal = `
         <html>
           <head><style>${styles}</style></head>
-          <body>${resultadoHTMLFirmado}</body>
+          <body>${htmlRaw}</body>
         </html>
       `;
-
-      // Asunto, nombre de archivo y cuerpo del correo usando nombreCompleto
-      const asunto = "Boleta de Pago - " + nombreCompleto;
-      const nombreArchivo = "Boleta_" + consecutivo + "_" + nombreCompleto + ".pdf";
-      const cuerpo = `Estimado/a ${nombreCompleto},\nAdjunto encontrarás tu boleta de pago.`;
 
       const payload = {
         html: htmlFinal,
         nombre: nombreCompleto,
-        consecutivo: consecutivo,
-        email: email,
-        asunto: asunto,
-        nombreArchivo: nombreArchivo,
-        cuerpo: cuerpo
+        consecutivo,
+        email,
+        asunto: `Boleta de Pago - ${nombreCompleto}`,
+        nombreArchivo: `Boleta_${consecutivo}_${nombreCompleto}.pdf`,
+        cuerpo: `Estimado/a ${nombreCompleto},\nAdjunto encontrarás tu boleta de pago.`
       };
 
       fetch("https://script.google.com/macros/s/AKfycbxAVofjU65K_pU-D2UYgHv31RlLOkL4BsqG940dSMDz3fj6TTKxdMonqmWU3aZ4z1e8/exec", {
