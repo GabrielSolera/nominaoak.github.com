@@ -601,11 +601,12 @@
         fechaPago = `${d}/${m}/${a.slice(2)}`;
       }
       // =============================================
-      // Usar parseFloat después de limpiar puntos y comas para admitir decimales y formatos con separadores
+      // Usar parseFloat para admitir decimales
       const diasLaborados = parseFloat(document.getElementById("diasLaborados").value) || 0;
-      const salarioBruto = parseFloat(document.getElementById("salario").value.replace(/\./g, '').replace(/,/g, '')) || 0;
+      const salarioBruto = parseFloat(
+        (document.getElementById("salario").value || '0').replace(/[^\d.]/g, '')
+      ) || 0;
       console.log("Salario Bruto capturado:", salarioBruto);
-      // Todas las operaciones usan salarioBruto limpio
       const salarioDiario = salarioBruto / 30;
       const salarioOrdinario = salarioDiario * diasLaborados;
       // Permitir decimales en horas extra y festivos
@@ -613,8 +614,7 @@
       const festivos = parseFloat(document.getElementById("festivoCantidad").value) || 0;
       // Cálculo de montos
       const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
-      // Aplicar pago doble para días festivos
-      const montoFestivo = (salarioBruto / 30) * festivos * 2;
+      const montoFestivo = salarioDiario * festivos;
       // Deducciones adicionales
       let totalDeducciones = 0;
       document.querySelectorAll('.monto-deduccion').forEach(input => {
