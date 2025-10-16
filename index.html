@@ -8,6 +8,180 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
+    /* Login Modal */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .login-modal {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 90%;
+      animation: slideUp 0.4s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .login-modal h2 {
+      text-align: center;
+      color: var(--acai-purple);
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .login-modal p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+    
+    .login-input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .login-input:focus {
+      outline: none;
+      border-color: var(--acai-purple);
+      box-shadow: 0 0 0 3px rgba(47, 0, 110, 0.1);
+    }
+    
+    .login-button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--acai-purple) 0%, #4a148c 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(47, 0, 110, 0.4);
+    }
+    
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+      animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .success-message {
+      background: #efe;
+      color: #373;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .user-info {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      animation: slideInRight 0.5s ease-out;
+    }
+    
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--acai-purple) 0%, #4a148c 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      color: var(--acai-purple);
+    }
+    
+    .logout-btn {
+      background: #f5f5f5;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s ease;
+    }
+    
+    .logout-btn:hover {
+      background: #e0e0e0;
+    }
+    
+    .content-wrapper {
+      display: none;
+    }
+    
+    .content-wrapper.active {
+      display: block;
+    }
+    
     @media print {
       body * {
         visibility: hidden;
@@ -367,7 +541,58 @@
   </style>
 </head>
 <body>
-  <div class="login-section">
+  <!-- Login Modal -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-modal">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="Logo.png" alt="Logo Oakberry" style="max-width: 120px;">
+      </div>
+      <h2>🔐 Acceso Seguro</h2>
+      <p>Ingresa tus credenciales para continuar</p>
+      
+      <div id="errorMessage" class="error-message"></div>
+      <div id="successMessage" class="success-message"></div>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <input 
+          type="text" 
+          id="username" 
+          class="login-input" 
+          placeholder="Usuario" 
+          required
+          autocomplete="username"
+        >
+        <input 
+          type="password" 
+          id="password" 
+          class="login-input" 
+          placeholder="Contraseña" 
+          required
+          autocomplete="current-password"
+        >
+        <button type="submit" class="login-button">
+          <span>Iniciar Sesión</span>
+        </button>
+      </form>
+      
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 13px; color: #666;">
+        <strong>Usuarios de prueba:</strong><br>
+        👤 admin / admin123<br>
+        👤 contador / conta456
+      </div>
+    </div>
+  </div>
+
+  <!-- User Info (visible after login) -->
+  <div id="userInfo" class="user-info">
+    <div class="user-avatar" id="userAvatar">A</div>
+    <span class="user-name" id="userName">Usuario</span>
+    <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+  </div>
+
+  <!-- Main Content (hidden until login) -->
+  <div id="mainContent" class="content-wrapper">
+  <div class="login-section" style="display:none;">
     <div id="g_id_onload"
          data-client_id="TU_CLIENT_ID_DE_GOOGLE"
          data-context="signin"
@@ -567,8 +792,132 @@
       <button type="button" onclick="enviarBoleta()"><span>📧 Enviar Boleta</span></button>
     </div>
   </div>
+  </div><!-- Cierre de mainContent -->
 
   <script>
+    // ========== SISTEMA DE LOGIN ==========
+    
+    // Usuarios autorizados (en producción, esto debería estar en un backend seguro)
+    const USUARIOS_AUTORIZADOS = {
+      'admin': {
+        password: 'admin123',
+        nombre: 'Administrador',
+        rol: 'admin'
+      },
+      'contador': {
+        password: 'conta456',
+        nombre: 'Contador',
+        rol: 'contador'
+      },
+      'gabriel': {
+        password: 'oakberry2025',
+        nombre: 'Gabriel Solera',
+        rol: 'admin'
+      },
+      'rrhh': {
+        password: 'recursos2025',
+        nombre: 'Recursos Humanos',
+        rol: 'rrhh'
+      }
+    };
+    
+    // Verificar si hay sesión activa al cargar la página
+    function checkSession() {
+      const session = localStorage.getItem('oakberrySession');
+      if (session) {
+        try {
+          const userData = JSON.parse(session);
+          const loginTime = userData.loginTime;
+          const currentTime = new Date().getTime();
+          
+          // Sesión expira después de 8 horas
+          if (currentTime - loginTime < 8 * 60 * 60 * 1000) {
+            showMainContent(userData);
+            return true;
+          } else {
+            localStorage.removeItem('oakberrySession');
+          }
+        } catch (e) {
+          localStorage.removeItem('oakberrySession');
+        }
+      }
+      return false;
+    }
+    
+    // Manejar el login
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMessage');
+      const successMsg = document.getElementById('successMessage');
+      
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+      
+      // Validar credenciales
+      if (USUARIOS_AUTORIZADOS[username] && USUARIOS_AUTORIZADOS[username].password === password) {
+        const userData = {
+          username: username,
+          nombre: USUARIOS_AUTORIZADOS[username].nombre,
+          rol: USUARIOS_AUTORIZADOS[username].rol,
+          loginTime: new Date().getTime()
+        };
+        
+        // Guardar sesión
+        localStorage.setItem('oakberrySession', JSON.stringify(userData));
+        
+        // Mostrar mensaje de éxito
+        successMsg.textContent = '✓ Acceso concedido. Bienvenido!';
+        successMsg.style.display = 'block';
+        
+        // Esperar un momento y mostrar contenido
+        setTimeout(() => {
+          showMainContent(userData);
+        }, 800);
+        
+      } else {
+        errorMsg.textContent = '✗ Usuario o contraseña incorrectos';
+        errorMsg.style.display = 'block';
+        
+        // Limpiar contraseña
+        document.getElementById('password').value = '';
+      }
+    }
+    
+    // Mostrar el contenido principal
+    function showMainContent(userData) {
+      document.getElementById('loginOverlay').style.display = 'none';
+      document.getElementById('mainContent').classList.add('active');
+      document.getElementById('userInfo').style.display = 'flex';
+      
+      // Actualizar info del usuario
+      const userName = document.getElementById('userName');
+      const userAvatar = document.getElementById('userAvatar');
+      
+      userName.textContent = userData.nombre;
+      userAvatar.textContent = userData.nombre.charAt(0).toUpperCase();
+      
+      // Cargar datos de colaboradores
+      fetchCSVData();
+    }
+    
+    // Cerrar sesión
+    function handleLogout() {
+      if (confirm('¿Está seguro que desea cerrar sesión?')) {
+        localStorage.removeItem('oakberrySession');
+        location.reload();
+      }
+    }
+    
+    // Verificar sesión al cargar
+    if (!checkSession()) {
+      document.getElementById('loginOverlay').style.display = 'flex';
+    }
+    
+    // ========== FIN SISTEMA DE LOGIN ==========
+    
     let colaboradoresData = [];
 
     function fetchCSVData() {
@@ -1030,9 +1379,11 @@
     }
 
     window.onload = function() {
-      fetchCSVData();
-      agregarDeduccion();
-      agregarOtroIngreso();
+      // No llamar a fetchCSVData aquí, se llama después del login
+      if (checkSession()) {
+        agregarDeduccion();
+        agregarOtroIngreso();
+      }
     };
   </script>
 </body>
