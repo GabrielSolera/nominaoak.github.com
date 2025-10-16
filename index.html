@@ -575,10 +575,8 @@
         </button>
       </form>
       
-      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 13px; color: #666;">
-        <strong>Usuarios de prueba:</strong><br>
-        👤 admin / admin123<br>
-        👤 contador / conta456
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 12px; color: #999;">
+        🔒 Acceso seguro mediante Google Apps Script
       </div>
     </div>
   </div>
@@ -795,31 +793,10 @@
   </div><!-- Cierre de mainContent -->
 
   <script>
-    // ========== SISTEMA DE LOGIN ==========
+    // ========== SISTEMA DE LOGIN CON GOOGLE APPS SCRIPT ==========
     
-    // Usuarios autorizados (en producción, esto debería estar en un backend seguro)
-    const USUARIOS_AUTORIZADOS = {
-      'admin': {
-        password: 'admin123',
-        nombre: 'Administrador',
-        rol: 'admin'
-      },
-      'contador': {
-        password: 'conta456',
-        nombre: 'Contador',
-        rol: 'contador'
-      },
-      'gabriel': {
-        password: 'oakberry2025',
-        nombre: 'Gabriel Solera',
-        rol: 'admin'
-      },
-      'rrhh': {
-        password: 'recursos2025',
-        nombre: 'Recursos Humanos',
-        rol: 'rrhh'
-      }
-    };
+    // URL del Google Apps Script desplegado
+    const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbyP0Cbcy5m-lWxz88IdOqGGOJ4fu3B5_8RqZZxiYgzaZJvQsQbqEzX6EZWPF6bjz6MpfQ/exec';
     
     // Verificar si hay sesión activa al cargar la página
     function checkSession() {
@@ -844,45 +821,72 @@
       return false;
     }
     
-    // Manejar el login
-    function handleLogin(event) {
+    // Manejar el login con backend
+    async function handleLogin(event) {
       event.preventDefault();
       
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
       const errorMsg = document.getElementById('errorMessage');
       const successMsg = document.getElementById('successMessage');
+      const loginButton = event.target.querySelector('button[type="submit"]');
       
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
       
-      // Validar credenciales
-      if (USUARIOS_AUTORIZADOS[username] && USUARIOS_AUTORIZADOS[username].password === password) {
-        const userData = {
-          username: username,
-          nombre: USUARIOS_AUTORIZADOS[username].nombre,
-          rol: USUARIOS_AUTORIZADOS[username].rol,
-          loginTime: new Date().getTime()
-        };
+      // Deshabilitar botón y mostrar loading
+      loginButton.disabled = true;
+      loginButton.innerHTML = '<span class="loading">⏳</span> <span>Verificando...</span>';
+      
+      try {
+        // Llamar al backend de Google Apps Script con GET (más compatible)
+        const getResponse = await fetch(`${AUTH_API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+        const result = await getResponse.json();
         
-        // Guardar sesión
-        localStorage.setItem('oakberrySession', JSON.stringify(userData));
+        if (result.success) {
+          const userData = {
+            username: result.user.username,
+            nombre: result.user.nombre,
+            rol: result.user.rol,
+            token: result.token,
+            loginTime: new Date().getTime()
+          };
+          
+          // Guardar sesión
+          localStorage.setItem('oakberrySession', JSON.stringify(userData));
+          
+          // Mostrar mensaje de éxito
+          successMsg.textContent = '✓ Acceso concedido. Bienvenido ' + result.user.nombre + '!';
+          successMsg.style.display = 'block';
+          
+          // Esperar un momento y mostrar contenido
+          setTimeout(() => {
+            showMainContent(userData);
+          }, 1000);
+          
+        } else {
+          errorMsg.textContent = '✗ ' + (result.message || 'Credenciales incorrectas');
+          errorMsg.style.display = 'block';
+          
+          // Limpiar contraseña
+          document.getElementById('password').value = '';
+          
+          // Rehabilitar botón
+          loginButton.disabled = false;
+          loginButton.innerHTML = '<span>Iniciar Sesión</span>';
+        }
         
-        // Mostrar mensaje de éxito
-        successMsg.textContent = '✓ Acceso concedido. Bienvenido!';
-        successMsg.style.display = 'block';
-        
-        // Esperar un momento y mostrar contenido
-        setTimeout(() => {
-          showMainContent(userData);
-        }, 800);
-        
-      } else {
-        errorMsg.textContent = '✗ Usuario o contraseña incorrectos';
+      } catch (error) {
+        console.error('Error en login:', error);
+        errorMsg.textContent = '✗ Error de conexión. Intenta nuevamente.';
         errorMsg.style.display = 'block';
         
         // Limpiar contraseña
         document.getElementById('password').value = '';
+        
+        // Rehabilitar botón
+        loginButton.disabled = false;
+        loginButton.innerHTML = '<span>Iniciar Sesión</span>';
       }
     }
     
