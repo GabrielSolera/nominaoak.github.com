@@ -906,8 +906,9 @@
       div.className = 'deduccion-row dynamic-row';
       div.innerHTML = `
         <input type="text" class="detalle-deduccion" placeholder="Descripción (ej: Impuesto sobre la renta)" style="flex:2;">
+        <input type="date" class="fecha-deduccion" placeholder="Fecha" style="flex:1;" title="Fecha de la deducción (opcional)">
         <input type="text" class="monto-deduccion" placeholder="Monto" style="flex:1;" inputmode="decimal">
-        <button type="button" class="btn-danger" onclick="this.parentNode.remove();">🗑️</button>
+        <button type="button" class="btn-danger" onclick="this.parentNode.remove();"><span>🗑️</span></button>
       `;
       container.appendChild(div);
     }
@@ -918,8 +919,9 @@
       div.className = 'otros-ingresos-row dynamic-row';
       div.innerHTML = `
         <input type="text" class="descripcion-ingreso" placeholder="Descripción (ej: Bono, Propina, etc.)" style="flex:2;">
+        <input type="date" class="fecha-ingreso" placeholder="Fecha" style="flex:1;" title="Fecha del ingreso (opcional)">
         <input type="text" class="monto-ingreso" placeholder="Monto" style="flex:1;" inputmode="decimal">
-        <button type="button" class="btn-danger" onclick="this.parentNode.remove();">🗑️</button>
+        <button type="button" class="btn-danger" onclick="this.parentNode.remove();"><span>🗑️</span></button>
       `;
       container.appendChild(div);
     }
