@@ -736,13 +736,21 @@
       let deduccionesHTML = '';
       document.querySelectorAll('.deduccion-row').forEach(row => {
         const descripcion = row.querySelector('.detalle-deduccion')?.value || '';
+        const fechaDeduccionRaw = row.querySelector('.fecha-deduccion')?.value || '';
         const monto = parseCurrency(row.querySelector('.monto-deduccion')?.value);
+        
+        let fechaDeduccionFormateada = '';
+        if (fechaDeduccionRaw) {
+          const [a, m, d] = fechaDeduccionRaw.split("-");
+          fechaDeduccionFormateada = `${d}/${m}/${a.slice(2)}`;
+        }
+        
         if (descripcion && monto > 0) {
           totalDeducciones += monto;
           deduccionesHTML += `
             <tr>
               <td style="padding:4px 5px;">${descripcion}</td>
-              <td style="text-align:center; padding:4px 5px;"></td>
+              <td style="text-align:center; padding:4px 5px;">${fechaDeduccionFormateada || ''}</td>
               <td style="text-align:right; padding:4px 5px;">₡${Math.round(monto).toLocaleString('es-CR')}</td>
             </tr>
           `;
@@ -754,13 +762,23 @@
       let otrosIngresosHTML = '';
       document.querySelectorAll('.otros-ingresos-row').forEach(row => {
         const descripcion = row.querySelector('.descripcion-ingreso')?.value || '';
+        const fechaIngresoRaw = row.querySelector('.fecha-ingreso')?.value || '';
         const monto = parseCurrency(row.querySelector('.monto-ingreso')?.value);
+        
+        let fechaIngresoFormateada = '';
+        if (fechaIngresoRaw) {
+          const [a, m, d] = fechaIngresoRaw.split("-");
+          fechaIngresoFormateada = `${d}/${m}/${a.slice(2)}`;
+        } else {
+          fechaIngresoFormateada = fechaPago;
+        }
+        
         if (descripcion && monto > 0) {
           totalOtrosIngresos += monto;
           otrosIngresosHTML += `
             <tr>
               <td style="padding:4px 5px;">${descripcion}</td>
-              <td style="text-align:center; padding:4px 5px;">${fechaPago}</td>
+              <td style="text-align:center; padding:4px 5px;">${fechaIngresoFormateada}</td>
               <td style="text-align:right; padding:4px 5px;">₡${Math.round(monto).toLocaleString('es-CR')}</td>
             </tr>
           `;
