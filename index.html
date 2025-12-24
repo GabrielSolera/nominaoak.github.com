@@ -4,183 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boletas de Pago CR</title>
+  <!-- Fuente Aptos no disponible en Google Fonts; se recomienda Segoe UI como fallback -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
-    /* Login Modal */
-    .login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .login-modal {
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
-      width: 90%;
-      animation: slideUp 0.4s ease-out;
-    }
-    
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(50px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .login-modal h2 {
-      text-align: center;
-      color: var(--acai-purple);
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-    
-    .login-modal p {
-      text-align: center;
-      color: #666;
-      margin-bottom: 30px;
-    }
-    
-    .login-input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-    }
-    
-    .login-input:focus {
-      outline: none;
-      border-color: var(--acai-purple);
-      box-shadow: 0 0 0 3px rgba(47, 0, 110, 0.1);
-    }
-    
-    .login-button {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--acai-purple) 0%, #4a148c 100%);
+    #loginBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #4a148c;
       color: white;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-    }
-    
-    .login-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(47, 0, 110, 0.4);
-    }
-    
-    .error-message {
-      background: #fee;
-      color: #c33;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      text-align: center;
-      font-size: 14px;
-      display: none;
-      animation: shake 0.5s;
-    }
-    
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
-    }
-    
-    .success-message {
-      background: #efe;
-      color: #373;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      text-align: center;
-      font-size: 14px;
-      display: none;
-    }
-    
-    .user-info {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: white;
-      padding: 12px 20px;
-      border-radius: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      display: none;
-      align-items: center;
-      gap: 12px;
-      z-index: 1000;
-      animation: slideInRight 0.5s ease-out;
-    }
-    
-    .user-avatar {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--acai-purple) 0%, #4a148c 100%);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 16px;
-    }
-    
-    .user-name {
-      font-weight: 600;
-      color: var(--acai-purple);
-    }
-    
-    .logout-btn {
-      background: #f5f5f5;
-      border: none;
+      border-radius: 5px;
       padding: 6px 12px;
-      border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
-      font-size: 13px;
-      transition: all 0.3s ease;
     }
-    
-    .logout-btn:hover {
-      background: #e0e0e0;
+    #loginBtn:hover {
+      background-color: #6a1b9a;
     }
-    
-    .content-wrapper {
-      display: none;
-    }
-    
-    .content-wrapper.active {
-      display: block;
-    }
-    
     @media print {
       body * {
         visibility: hidden;
@@ -205,279 +48,78 @@
       }
     }
     :root {
-      --strawberry-red: #FF4B5F;
-      --matcha-green: #46C3AF;
-      --blueberry-blue: #5B94B7;
-      --acai-purple: #2f006e;
-      --acai-purple-light: #D5C3E8;
+      --strawberry-red: #FF4B5F;  /* R255 G75 B95 */
+      --matcha-green: #46C3AF;    /* R70 G195 B175 */
+      --blueberry-blue: #5B94B7;  /* R91 G148 B183 */
     }
-    * {
-      box-sizing: border-box;
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes scaleIn {
-      from {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    
-    @keyframes slideInRight {
-      from {
-        opacity: 0;
-        transform: translateX(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-    }
-    
-    @keyframes shimmer {
-      0% {
-        background-position: -1000px 0;
-      }
-      100% {
-        background-position: 1000px 0;
-      }
-    }
-    
     body {
-      font-family: 'Segoe UI', 'Arial', sans-serif;
-      background: linear-gradient(135deg, #f8f5ec 0%, #e8e0f5 100%);
-      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f5ec;
+      background-image: img src="fondo_pago_planill.png" width="80" alt="Logo Oakberry";
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      padding: 30px;
       color: #333;
-      min-height: 100vh;
-      animation: fadeInDown 0.6s ease-out;
     }
+    /* Estilo específico para el campo de nota/comentario */
     #nota {
       font-family: 'Aptos', 'Segoe UI', sans-serif;
     }
-    h1, h2 {
-      color: var(--acai-purple);
-    }
-    .logo-header {
+    h1 {
       text-align: center;
-      margin-bottom: 30px;
-      padding: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      animation: fadeInDown 0.8s ease-out;
+      color: #2f006e;
     }
-    .logo-header img {
-      max-width: 200px;
-      margin-bottom: 10px;
-      animation: scaleIn 1s ease-out;
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
     }
-    .logo-header h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-      animation: slideInRight 0.8s ease-out 0.2s both;
-    }
-    .login-section {
-      text-align: right;
-      padding: 10px;
-      margin-bottom: 10px;
-      animation: fadeInDown 0.6s ease-out 0.1s both;
+    .logo img {
+      width: 160px;
     }
     section {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
-      max-width: 1000px;
+      background: #D5C3E8; /* Açaí Purple Light (más claro) */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 900px;
       margin-left: auto;
       margin-right: auto;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      animation: fadeInUp 0.8s ease-out;
-      animation-fill-mode: both;
-    }
-    section:nth-child(1) {
-      animation-delay: 0.1s;
-    }
-    section:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    section:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-    section:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
-    .step-header {
-      color: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 18px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: slideInRight 0.6s ease-out;
-      position: relative;
-      overflow: hidden;
-    }
-    .step-header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmer 2s infinite;
-    }
-    .step-header span {
-      font-size: 24px;
-      animation: pulse 2s infinite;
-    }
-    .step-red {
-      background: linear-gradient(135deg, var(--strawberry-red) 0%, #ff6b7f 100%);
-    }
-    .step-green {
-      background: linear-gradient(135deg, var(--matcha-green) 0%, #5dd4c0 100%);
-    }
-    .step-blue {
-      background: linear-gradient(135deg, var(--blueberry-blue) 0%, #6fa9cc 100%);
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
     }
     label {
-      font-weight: 600;
+      font-weight: 500;
       display: block;
-      margin-bottom: 6px;
-      color: #555;
-      font-size: 14px;
+      margin-bottom: 4px;
     }
-    input, select, textarea {
+    input, select {
       width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
       margin-bottom: 15px;
-      font-size: 15px;
-      transition: all 0.3s ease;
     }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: var(--acai-purple);
-      box-shadow: 0 0 0 3px rgba(47, 0, 110, 0.1);
-      transform: translateY(-2px);
-    }
-    input:hover, select:hover, textarea:hover {
-      border-color: #b0b0b0;
-    }
+    /* Clase para inputs de fecha más pequeños */
     .input-small {
-      width: 100%;
-      max-width: 250px;
+      width: 40%;
+      min-width: 200px;
     }
     button {
-      background: linear-gradient(135deg, var(--acai-purple) 0%, #4a148c 100%);
+      background-color: #2f006e;
       color: white;
-      padding: 14px 28px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
-      font-weight: 600;
-      display: inline-block;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(47, 0, 110, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-    button::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-    button:hover::before {
-      width: 300px;
-      height: 300px;
-    }
-    button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(47, 0, 110, 0.5);
-    }
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 4px 12px rgba(47, 0, 110, 0.3);
-    }
-    button span {
-      position: relative;
-      z-index: 1;
-    }
-    .btn-small {
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-    .btn-danger {
-      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-      padding: 8px 12px;
-      box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-    }
-    .dynamic-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-      align-items: flex-end;
-      animation: fadeInUp 0.4s ease-out;
-    }
-    .dynamic-row input {
-      margin-bottom: 0;
-    }
-    .dynamic-row button {
-      flex-shrink: 0;
+      display: block;
+      margin: 0 auto;
     }
     #resultado {
       display: none;
@@ -488,109 +130,36 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-    #boleta {
-      animation: fadeInUp 0.8s ease-out;
-    }
-    #botonPdf {
+    .pdf-button {
+      text-align: center;
       display: none;
-      max-width: 900px;
-      margin: 30px auto 0 auto;
-      animation: fadeInUp 0.6s ease-out 0.3s both;
     }
-    .button-group {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      flex-wrap: wrap;
+    .step-red {
+      background-color: var(--strawberry-red);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
-    .nota-section {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
-      max-width: 1000px;
-      margin-left: auto;
-      margin-right: auto;
-      animation: fadeInUp 0.8s ease-out 0.4s both;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    .step-green {
+      background-color: var(--matcha-green);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
-    .nota-section:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    }
-    .nota-section h2 {
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-    
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    
-    .loading {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-    
-    h3 {
-      animation: slideInRight 0.6s ease-out;
+    .step-blue {
+      background-color: var(--blueberry-blue);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <!-- Login Modal -->
-  <div id="loginOverlay" class="login-overlay">
-    <div class="login-modal">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <img src="Logo.png" alt="Logo Oakberry" style="max-width: 120px;">
-      </div>
-      <h2>🔐 Acceso Seguro</h2>
-      <p>Ingresa tus credenciales para continuar</p>
-      
-      <div id="errorMessage" class="error-message"></div>
-      <div id="successMessage" class="success-message"></div>
-      
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <input 
-          type="text" 
-          id="username" 
-          class="login-input" 
-          placeholder="Usuario" 
-          required
-          autocomplete="username"
-        >
-        <input 
-          type="password" 
-          id="password" 
-          class="login-input" 
-          placeholder="Contraseña" 
-          required
-          autocomplete="current-password"
-        >
-        <button type="submit" class="login-button">
-          <span>Iniciar Sesión</span>
-        </button>
-      </form>
-      
-      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 12px; color: #999;">
-        🔒 Acceso seguro mediante Google Apps Script
-      </div>
-    </div>
-  </div>
-
-  <!-- User Info (visible after login) -->
-  <div id="userInfo" class="user-info">
-    <div class="user-avatar" id="userAvatar">A</div>
-    <span class="user-name" id="userName">Usuario</span>
-    <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
-  </div>
-
-  <!-- Main Content (hidden until login) -->
-  <div id="mainContent" class="content-wrapper">
-  <!-- Google Sign-In deshabilitado temporalmente
-  <div class="login-section" style="display:none;">
+  <!-- Barra de login simplificada con botón pequeño de Google alineado a la derecha -->
+  <div style="text-align: right; padding: 10px;">
     <div id="g_id_onload"
          data-client_id="TU_CLIENT_ID_DE_GOOGLE"
          data-context="signin"
@@ -606,27 +175,22 @@
          data-logo_alignment="right">
     </div>
   </div>
-  -->
 
-  <div class="logo-header">
-    <img src="Logo.png" alt="Logo Oakberry">
+  <div style="text-align: center; margin-bottom: 20px;">
+    <img src="Logo.png" alt="Logo" style="max-width: 200px;">
     <h2>Boletas de pago Oakberry Costa Rica</h2>
   </div>
 
-  <!-- Campos ocultos -->
-  <input type="hidden" id="nombre_envio">
-  <input type="hidden" id="apellido_envio">
-  <input type="hidden" id="cedula_envio">
-  <input type="hidden" id="correo_envio">
-  <input type="hidden" id="restaurante_envio">
-  <input type="hidden" id="consecutivo_envio">
+  <input type="hidden" id="nombre_envio" value="Gabriel Solera Mejías">
+  <input type="hidden" id="consecutivo_envio" value="46">
+  <input type="hidden" id="correo_colaborador" value="">
 
   <!-- FORMULARIO PRINCIPAL -->
   <form id="boletaForm">
     <!-- EMPRESA -->
     <section>
-      <div class="step-header step-red">
-        <span>📋</span> PASO 1 DE 3 — Empresa
+      <div class="step-red">
+        <h2>PASO 1 DE 3 — Empresa</h2>
       </div>
       <div class="grid">
         <div>
@@ -672,8 +236,8 @@
 
     <!-- EMPLEADO -->
     <section>
-      <div class="step-header step-green">
-        <span>👤</span> PASO 2 DE 3 — Empleado
+      <div class="step-green">
+        <h2>PASO 2 DE 3 — Empleado</h2>
       </div>
       <div class="grid">
         <div>
@@ -682,6 +246,12 @@
             <option value="">Seleccione colaborador...</option>
           </select>
         </div>
+    <!-- Campos ocultos para datos de colaborador que se llenan automáticamente -->
+    <input type="hidden" id="nombre_envio">
+    <input type="hidden" id="apellido_envio">
+    <input type="hidden" id="cedula_envio">
+    <input type="hidden" id="correo_envio">
+    <input type="hidden" id="restaurante_envio">
         <div>
           <label>Apellido</label>
           <input type="text" id="apellidoEmpleado" list="historialApellidoEmpleado">
@@ -698,84 +268,108 @@
           <datalist id="historialCorreoEmpleado"></datalist>
         </div>
         <div>
-          <label>Consecutivo</label>
-          <input type="text" id="consecutivo" placeholder="CR-2025-001">
+          <label>Consecutivo: <input type="text" id="consecutivo" placeholder="CR-2025-001"></label>
         </div>
-        <div>
-          <label>Restaurante en el que labora</label>
+      </div>
+      <div>
+        <label>Restaurante en el que labora:
           <input type="text" id="restaurante">
-        </div>
+        </label>
       </div>
     </section>
 
     <!-- INGRESOS -->
     <section>
-      <div class="step-header step-blue">
-        <span>💰</span> PASO 3 DE 3 — Ingresos
+      <div class="step-blue">
+        <h2>PASO 3 DE 3 — Ingresos</h2>
       </div>
       <div class="grid">
         <div>
           <label>Fecha de pago</label>
           <input type="date" id="fechaPago" class="input-small">
         </div>
+      </div>
+      <div class="form-group">
+        <label for="fecha_festivo">Fecha de día festivo (opcional):</label>
+        <input type="date" id="fecha_festivo" class="input-small">
+      </div>
+      <div class="grid">
         <div>
-          <label>Salario bruto mensual</label>
-          <input type="text" id="salario" list="historialSalario" class="input-small" inputmode="decimal" oninput="formatNumberInput(this); calculateExtrasAndFestivos()" onblur="unformatNumberInput(this)">
+          <label for="salario">Salario bruto</label>
+          <input
+            type="text"
+            id="salario"
+            list="historialSalario"
+            class="form-control"
+            inputmode="decimal"
+            oninput="formatNumberInput(this)"
+            onblur="unformatNumberInput(this)"
+            style="width: 40% !important;"
+          />
           <datalist id="historialSalario"></datalist>
         </div>
-        <div>
-          <label>Días laborados</label>
-          <input type="number" id="diasLaborados" placeholder="Días" step="any" min="0" class="input-small" oninput="calculateExtrasAndFestivos()">
+      </div>
+      <!-- Campo de ingreso manual de días laborados -->
+      <div class="form-group">
+        <label for="diasLaborados">Días laborados:</label>
+        <input type="number" id="diasLaborados" placeholder="Días" step="any" min="0" style="width: 40% !important;">
+      </div>
+        <!-- Horas extra (side-by-side layout) -->
+        <div style="grid-column: 1/-1;">
+          <div style="display: flex; gap: 10px;">
+            <div>
+              <label>Horas extra</label>
+              <input type="number" placeholder="Cantidad" id="horasExtraCantidad">
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <input type="text" placeholder="Monto" id="horasExtraMonto" readonly>
+            </div>
+          </div>
+        </div>
+        <!-- Día festivo / Extra (solo campo de cantidad) -->
+        <div style="grid-column: 1/-1;">
+          <div style="display: flex; gap: 10px;">
+            <div>
+              <label>Día festivo / Extra</label>
+              <input type="number" placeholder="Cantidad" id="festivoCantidad">
+            </div>
+          </div>
+        </div>
+
+        <!-- Deducciones dinámicas -->
+        <div style="grid-column: 1/-1;">
+          <label>Deducciones</label>
+          <div id="deduccionesContainer"></div>
+          <button type="button" onclick="agregarDeduccion()" style="margin-bottom:10px;">+ Añadir deducción</button>
+          <input type="text" id="deducciones" list="historialDeducciones" inputmode="decimal"
+            class="form-control"
+            style="display:none;">
+          <datalist id="historialDeducciones"></datalist>
+        </div>
+        <!-- Otros Ingresos dinámicas -->
+        <div style="grid-column: 1/-1;">
+          <label>Otros Ingresos</label>
+          <div id="bonificacionesContainer"></div>
+          <button type="button" onclick="agregarBonificacion()" style="margin-bottom:10px;">+ Añadir bonificación</button>
+          <input type="text" id="otrosIngresos" list="historialBonificaciones" inputmode="decimal"
+            class="form-control"
+            style="display:none;">
+          <datalist id="historialBonificaciones"></datalist>
         </div>
       </div>
-      
-      <h3 style="margin-top: 20px; margin-bottom: 15px; color: var(--acai-purple);">Horas Extra</h3>
-      <div class="grid">
-        <div>
-          <label>Cantidad de horas</label>
-          <input type="number" placeholder="Ej: 8" id="horasExtraCantidad" step="0.5" min="0" oninput="calculateExtrasAndFestivos()">
-        </div>
-        <div>
-          <label>Monto calculado</label>
-          <input type="text" placeholder="Monto automático" id="horasExtraMonto" readonly style="background: #f5f5f5;">
-        </div>
-      </div>
-
-      <h3 style="margin-top: 20px; margin-bottom: 15px; color: var(--acai-purple);">Día Festivo / Extra</h3>
-      <div class="grid">
-        <div>
-          <label>Fecha de día festivo (opcional)</label>
-          <input type="date" id="fecha_festivo" class="input-small">
-        </div>
-        <div>
-          <label>Cantidad de días festivos</label>
-          <input type="number" placeholder="Ej: 1" id="festivoCantidad" step="0.5" min="0" oninput="calculateExtrasAndFestivos()">
-        </div>
-      </div>
-
-      <h3 style="margin-top: 25px; margin-bottom: 15px; color: var(--acai-purple);">Deducciones</h3>
-      <div id="deduccionesContainer"></div>
-      <button type="button" onclick="agregarDeduccion()" class="btn-small"><span>+ Añadir deducción</span></button>
-
-      <h3 style="margin-top: 25px; margin-bottom: 15px; color: var(--acai-purple);">Otros Ingresos</h3>
-      <div id="otrosIngresosContainer"></div>
-      <button type="button" onclick="agregarOtroIngreso()" class="btn-small"><span>+ Añadir ingreso</span></button>
-
-      <div style="text-align: center; margin-top: 30px;">
-        <button type="button" onclick="generarBoleta()"><span>✨ Generar boleta</span></button>
-      </div>
+      <button type="button" onclick="generarBoleta()">Generar boleta</button>
     </section>
   </form>
 
   <!-- NOTA U OBSERVACIÓN -->
-  <div class="nota-section">
-    <h2>📝 Nota u Observación</h2>
+  <div class="step">
+    <h2>Nota u Observación</h2>
     <label>Comentario adicional (opcional):</label>
-    <textarea id="nota" rows="3" placeholder="Escribe aquí cualquier comentario adicional..."></textarea>
+    <textarea id="nota" rows="3" style="width: 100%; border-radius: 5px; padding: 8px; border: 1px solid #ccc;"></textarea>
   </div>
-
   <!-- RESULTADO -->
-  <div id="boleta">
+ <div id="boleta">
     <div id="comprobantePDF">
       <div id="recibo" class="output" style="background-color:#f9f6f1; margin:0 !important; padding:0 !important; min-height:auto !important; height:auto !important;">
         <div style="text-align: center; margin-bottom: 10px;">
@@ -784,147 +378,23 @@
       </div>
     </div>
   </div>
-
-  <div id="botonPdf">
-    <div class="button-group">
-      <button onclick="imprimirBoleta()"><span>🖨️ Imprimir</span></button>
-      <button type="button" onclick="enviarBoleta()"><span>📧 Enviar Boleta</span></button>
+  <div id="botonPdf" style="display:none; max-width:900px; margin:30px auto 0 auto;">
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="button" onclick="imprimirBoleta()">Imprimir</button>
+      <!-- Campos ocultos requeridos -->
+      <input type="hidden" id="nombre_envio" value="Gabriel Solera Mejías">
+      <input type="hidden" id="consecutivo_envio" value="46">
+      <input type="hidden" id="correoEmpleado" value="colaborador@ejemplo.com"> <!-- Correo real del colaborador -->
+      <!-- Botón -->
+      <button type="button" onclick="enviarBoleta()">Enviar Boleta</button>
     </div>
   </div>
-  </div><!-- Cierre de mainContent -->
 
+  <!-- SCRIPT PRINCIPAL -->
+</body>
   <script>
-    // ========== SISTEMA DE LOGIN CON GOOGLE APPS SCRIPT ==========
-    
-    // URL del Google Apps Script desplegado
-    const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbzZAh_BQvbfS9yK-FCAK2qX-Vy4l3d4TZQmMY-4i-c8dTBBZ-zglkX9pGDKjd2QQbO4lw/exec';
-    
-    // Verificar si hay sesión activa al cargar la página
-    function checkSession() {
-      const session = localStorage.getItem('oakberrySession');
-      if (session) {
-        try {
-          const userData = JSON.parse(session);
-          const loginTime = userData.loginTime;
-          const currentTime = new Date().getTime();
-          
-          // Sesión expira después de 8 horas
-          if (currentTime - loginTime < 8 * 60 * 60 * 1000) {
-            showMainContent(userData);
-            return true;
-          } else {
-            localStorage.removeItem('oakberrySession');
-          }
-        } catch (e) {
-          localStorage.removeItem('oakberrySession');
-        }
-      }
-      return false;
-    }
-    
-    // Manejar el login con backend
-    async function handleLogin(event) {
-      event.preventDefault();
-      
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
-      const errorMsg = document.getElementById('errorMessage');
-      const successMsg = document.getElementById('successMessage');
-      const loginButton = event.target.querySelector('button[type="submit"]');
-      
-      errorMsg.style.display = 'none';
-      successMsg.style.display = 'none';
-      
-      // Deshabilitar botón y mostrar loading
-      loginButton.disabled = true;
-      loginButton.innerHTML = '<span class="loading">⏳</span> <span>Verificando...</span>';
-      
-      try {
-        // Llamar al backend de Google Apps Script con GET (más compatible)
-        const getResponse = await fetch(`${AUTH_API_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
-        const result = await getResponse.json();
-        
-        if (result.success) {
-          const userData = {
-            username: result.user.username,
-            nombre: result.user.nombre,
-            rol: result.user.rol,
-            token: result.token,
-            loginTime: new Date().getTime()
-          };
-          
-          // Guardar sesión
-          localStorage.setItem('oakberrySession', JSON.stringify(userData));
-          
-          // Mostrar mensaje de éxito
-          successMsg.textContent = '✓ Acceso concedido. Bienvenido ' + result.user.nombre + '!';
-          successMsg.style.display = 'block';
-          
-          // Esperar un momento y mostrar contenido
-          setTimeout(() => {
-            showMainContent(userData);
-          }, 1000);
-          
-        } else {
-          errorMsg.textContent = '✗ ' + (result.message || 'Credenciales incorrectas');
-          errorMsg.style.display = 'block';
-          
-          // Limpiar contraseña
-          document.getElementById('password').value = '';
-          
-          // Rehabilitar botón
-          loginButton.disabled = false;
-          loginButton.innerHTML = '<span>Iniciar Sesión</span>';
-        }
-        
-      } catch (error) {
-        console.error('Error en login:', error);
-        errorMsg.textContent = '✗ Error de conexión. Intenta nuevamente.';
-        errorMsg.style.display = 'block';
-        
-        // Limpiar contraseña
-        document.getElementById('password').value = '';
-        
-        // Rehabilitar botón
-        loginButton.disabled = false;
-        loginButton.innerHTML = '<span>Iniciar Sesión</span>';
-      }
-    }
-    
-    // Mostrar el contenido principal
-    function showMainContent(userData) {
-      document.getElementById('loginOverlay').style.display = 'none';
-      document.getElementById('mainContent').classList.add('active');
-      document.getElementById('userInfo').style.display = 'flex';
-      
-      // Actualizar info del usuario
-      const userName = document.getElementById('userName');
-      const userAvatar = document.getElementById('userAvatar');
-      
-      userName.textContent = userData.nombre;
-      userAvatar.textContent = userData.nombre.charAt(0).toUpperCase();
-      
-      // Cargar datos de colaboradores
-      fetchCSVData();
-    }
-    
-    // Cerrar sesión
-    function handleLogout() {
-      if (confirm('¿Está seguro que desea cerrar sesión?')) {
-        localStorage.removeItem('oakberrySession');
-        location.reload();
-      }
-    }
-    
-    // Verificar sesión al cargar
-    if (!checkSession()) {
-      document.getElementById('loginOverlay').style.display = 'flex';
-    }
-    
-    // ========== FIN SISTEMA DE LOGIN ==========
-    
+    // ====== Script de carga de colaboradores desde Google Sheets y autollenado ======
     let colaboradoresData = [];
-
     function fetchCSVData() {
       fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSr0HY1utNGCbuDxlgG3UnFopdsU4n54ACGlMYdJP0KIZM_3PmDVEDzxTD4tlvr6aZRF9ERT6DsTQ2p/pub?gid=76022082&single=true&output=csv')
         .then(response => response.text())
@@ -938,15 +408,20 @@
             cedula: c[2]?.trim(),
             correo: c[3]?.trim(),
             restaurante: c[4]?.trim()
-          })).filter(c => c.nombre && c.apellido);
-          
+          })).filter(c => c.nombre && c.apellido); // Solo filas válidas
           const select = document.getElementById("colaborador");
           if (select) {
+            // Limpiar opciones previas y agregar opción por defecto
             select.innerHTML = '<option value="">Seleccione colaborador...</option>';
             colaboradoresData.forEach((c, idx) => {
               const option = document.createElement("option");
-              option.value = idx;
+              option.value = idx; // Usar el índice para referencia rápida
               option.textContent = `${c.nombre} ${c.apellido}`;
+              option.dataset.nombre = c.nombre;
+              option.dataset.apellido = c.apellido;
+              option.dataset.cedula = c.cedula;
+              option.dataset.correo = c.correo;
+              option.dataset.restaurante = c.restaurante;
               select.appendChild(option);
             });
           }
@@ -957,10 +432,16 @@
       const select = document.getElementById("colaborador");
       const idx = select.value;
       if (idx === "" || !colaboradoresData[idx]) {
+        // Limpiar campos si no hay selección
         document.getElementById("apellidoEmpleado").value = "";
         document.getElementById("idEmpleado").value = "";
         document.getElementById("correoEmpleado").value = "";
         document.getElementById("restaurante").value = "";
+        document.getElementById("nombre_envio").value = "";
+        document.getElementById("apellido_envio").value = "";
+        document.getElementById("cedula_envio").value = "";
+        document.getElementById("correo_envio").value = "";
+        document.getElementById("restaurante_envio").value = "";
         return;
       }
       const c = colaboradoresData[idx];
@@ -968,6 +449,7 @@
       document.getElementById("idEmpleado").value = c.cedula || "";
       document.getElementById("correoEmpleado").value = c.correo || "";
       document.getElementById("restaurante").value = c.restaurante || "";
+      // Campos ocultos para envío
       document.getElementById("nombre_envio").value = c.nombre || "";
       document.getElementById("apellido_envio").value = c.apellido || "";
       document.getElementById("cedula_envio").value = c.cedula || "";
@@ -975,72 +457,113 @@
       document.getElementById("restaurante_envio").value = c.restaurante || "";
     }
 
+    window.onload = function () {
+      fetchCSVData();
+    };
+  </script>
+  <!-- Los campos visibles requeridos para mostrar los datos del colaborador:
+  <input type="text" id="apellido">
+  <input type="text" id="cedula">
+  <input type="text" id="correo">
+  <input type="text" id="restaurante">
+  -->
+
+  <script>
+    // ====== Cálculo automático de Monto para Horas Extra y Día festivo/Extra ======
     function parseCurrency(value) {
-      return parseFloat((value || '0').toString().replace(/[^\d.]/g, '')) || 0;
+      return Number(value.toString().replace(/,/g, ''));
     }
 
     function calculateExtrasAndFestivos() {
-      const salarioBruto = parseCurrency(document.getElementById('salario').value);
-      const diasLaborados = parseCurrency(document.getElementById('diasLaborados').value);
-      const horasExtra = parseCurrency(document.getElementById('horasExtraCantidad').value);
-      const festivoCantidad = parseCurrency(document.getElementById('festivoCantidad').value);
+      const salarioBrutoInput = document.getElementById('salario');
+      const horasExtrasInput = document.getElementById('horasExtraCantidad');
+      const horasExtrasMontoInput = document.getElementById('horasExtraMonto');
+      const festivoCantidadInput = document.getElementById('festivoCantidad');
+      const festivoMontoInput = document.getElementById('festivoMonto');
+      const diasLaboradosInput = document.getElementById('diasLaborados');
 
-      const salarioOrdinario = (salarioBruto / 30) * diasLaborados;
-      const salarioDiario = diasLaborados > 0 ? (salarioOrdinario / diasLaborados) : 0;
-      const salarioHora = salarioDiario / 8;
-      const montoExtra = horasExtra * salarioHora * 1.5;
-      const montoFestivo = festivoCantidad * salarioDiario * 2;
+      // Parse grossSalary as number without commas (remove all commas)
+      const grossSalary = parseFloat((salarioBrutoInput.value || '0').replace(/,/g, '')) || 0;
+      const extraHoursQty = parseFloat((horasExtrasInput.value || '0').replace(/,/g, '')) || 0;
+      const festivoQty = parseFloat((festivoCantidadInput.value || '0').replace(/,/g, '')) || 0;
+      const diasLaborados = parseFloat((diasLaboradosInput?.value || '0').replace(/,/g, '')) || 0;
 
-      document.getElementById('horasExtraMonto').value = isNaN(montoExtra) ? '' : Math.round(montoExtra).toLocaleString('es-CR');
+      // Calcular subsidio diario correctamente (del salario bruto mensual y días laborados)
+      const salarioOrdinario = (grossSalary / 30) * diasLaborados;
+      const dailySubsidy = diasLaborados > 0 ? (salarioOrdinario / diasLaborados) : 0;
+      // Nueva fórmula para horas extra
+      const hourlyRate = dailySubsidy / 8;
+      const overtimePay = extraHoursQty * hourlyRate * 1.5;
+      // Día festivo: festivoMonto = cantidadFestivos * subsidioDiario * 2 (doble)
+      const festivoMontoCalc = festivoQty * dailySubsidy * 2;
+
+      horasExtrasMontoInput.value = isNaN(overtimePay) ? '' : overtimePay.toLocaleString('en-US');
+      festivoMontoInput.value = isNaN(festivoMontoCalc) ? '' : Math.round(festivoMontoCalc).toLocaleString('es-CR');
     }
 
+    // Attach listeners after DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+      const horasExtrasInput = document.getElementById('horasExtraCantidad');
+      const festivoCantidadInput = document.getElementById('festivoCantidad');
+      const salarioBrutoInput = document.getElementById('salario');
+      if (horasExtrasInput) horasExtrasInput.addEventListener('input', calculateExtrasAndFestivos);
+      if (festivoCantidadInput) festivoCantidadInput.addEventListener('input', calculateExtrasAndFestivos);
+      if (salarioBrutoInput) salarioBrutoInput.addEventListener('input', calculateExtrasAndFestivos);
+    });
     function autocompletarEmpresa() {
       const empresa = document.getElementById("empresa").value;
       const pais = document.getElementById("paisEmpresa");
+      // const ciudad = document.getElementById("ciudadEmpresa");
       const direccion = document.getElementById("direccionEmpresa");
       const moneda = document.getElementById("moneda");
       const cedula = document.getElementById("cedulaEmpresa");
 
-      const empresas = {
-        "ACAI OAK RESTAURANTES S.A": {
-          pais: "Costa Rica",
-          direccion: "800 Norte Del Bac, Ruta Nacional Treciaria 310, San José, San Rafael CC Calle Real Guachipelin local #2",
-          moneda: "₡",
-          cedula: "3 101 902500"
-        },
-        "OAKBERRY PANAMA S.A": {
-          pais: "Panamá",
-          direccion: "Edificio Scotia Plaza, Piso 11, Avenida Federico Boyd y Calle 51, PO Box 0816-03356, Panamá, República de Panamá.",
-          moneda: "$",
-          cedula: "155754321-2-2024"
-        },
-        "OAKBERRY GUATEMALA S.A": {
-          pais: "Guatemala",
-          direccion: "Diagonal 6, 10-50, zona 10, Edificio Interamericas, Torre Norte, Nivel 8, Oficina 801, Guatemala, Guatemala.",
-          moneda: "Q",
-          cedula: "0623-200325-115-2"
-        },
-        "OAKBERRY EL SALVADOR S.A": {
-          pais: "El Salvador",
-          direccion: "EDIFICIO MILLENIUM PISO 21, OFICINA 28, PASEO GENERAL ESCALÓN, DISTRITO DE SAN SALVADOR, MUNICIPIO DE SAN SALVADOR CENTRO, DEPARTAMENTO DE SAN SALVADOR",
-          moneda: "$",
-          cedula: ""
-        }
-      };
-
-      const data = empresas[empresa];
-      if (data) {
-        pais.value = data.pais;
-        direccion.value = data.direccion;
-        moneda.value = data.moneda;
-        cedula.value = data.cedula;
-      } else {
-        pais.value = "";
-        direccion.value = "";
-        cedula.value = "";
+      switch (empresa) {
+        case "ACAI OAK RESTAURANTES S.A":
+          pais.value = "Costa Rica";
+          // ciudad.value = "San José";
+          direccion.value = "800 Norte Del Bac, Ruta Nacional Treciaria 310, San José, San Rafael CC Calle Real Guachipelin local #2";
+          moneda.value = "₡";
+          cedula.value = "3 101 902500";
+          break;
+        case "OAKBERRY PANAMA S.A":
+          pais.value = "Panamá";
+          // ciudad.value = "Panamá";
+          direccion.value = "Edificio Scotia Plaza, Piso 11, Avenida Federico Boyd y Calle 51, PO Box 0816-03356, Panamá, República de Panamá.";
+          moneda.value = "$";
+          cedula.value = "155754321-2-2024";
+          break;
+        case "OAKBERRY GUATEMALA S.A":
+          pais.value = "Guatemala";
+          // ciudad.value = "Guatemala";
+          direccion.value = "Diagonal 6, 10-50, zona 10, Edificio Interamericas, Torre Norte, Nivel 8, Oficina 801, Guatemala, Guatemala.";
+          moneda.value = "Q";
+          cedula.value = "0623-200325-115-2";
+          break;
+        case "OAKBERRY EL SALVADOR S.A":
+          pais.value = "El Salvador";
+          // ciudad.value = "San Salvador";
+          direccion.value = "EDIFICIO MILLENIUM PISO 21, OFICINA 28, PASEO GENERAL ESCALÓN, DISTRITO DE SAN SALVADOR, MUNICIPIO DE SAN SALVADOR CENTRO, DEPARTAMENTO DE SAN SALVADOR";
+          moneda.value = "$";
+          cedula.value = "";
+          break;
+        default:
+          pais.value = "";
+          // ciudad.value = "";
+          direccion.value = "";
+          cedula.value = "";
       }
     }
 
+    // Formato de colones sin decimales
+    function formatMonto(valor) {
+      return `₡${Number(valor).toLocaleString('es-CR', {
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+      })}`;
+    }
+
+    // Función para generar un número consecutivo almacenado localmente
     function obtenerConsecutivo() {
       let consecutivo = localStorage.getItem('consecutivoBoleta');
       if (!consecutivo) {
@@ -1053,117 +576,194 @@
     }
 
     function generarBoleta() {
+      // DATOS
       const empresa = document.getElementById("empresa").value || '';
       const cedulaEmpresa = document.getElementById("cedulaEmpresa").value || '';
-      
+      // Obtener nombre y apellido desde el select de colaborador si existe, si no, usar campos
       let nombreColab = '';
       const colaboradorSelect = document.getElementById("colaborador");
       if (colaboradorSelect && colaboradoresData.length > 0 && colaboradorSelect.value !== "" && colaboradoresData[colaboradorSelect.value]) {
         const c = colaboradoresData[colaboradorSelect.value];
-        nombreColab = `${c.nombre || ''} ${c.apellido || ''}`;
+        nombreColab = (c.nombre || '') + " " + (c.apellido || '');
       } else {
-        nombreColab = document.getElementById("apellidoEmpleado").value || '';
+        nombreColab = (document.getElementById("nombre")?.value || '') + " " + (document.getElementById("apellidoEmpleado").value || '');
       }
-      
       const cedulaColab = document.getElementById("idEmpleado").value || '';
-      
+      // ==== FORMATEO DE FECHA DE PAGO DD/MM/YY ====
       const rawFecha = document.getElementById("fechaPago").value || '';
       let fechaPago = "";
       if (rawFecha) {
         const [a, m, d] = rawFecha.split("-");
         fechaPago = `${d}/${m}/${a.slice(2)}`;
       }
-      
-      const diasLaborados = parseCurrency(document.getElementById("diasLaborados").value);
-      const salario = parseCurrency(document.getElementById('salario').value);
+      // =============================================
+      // Usar parseFloat para admitir decimales, quitando cualquier carácter no numérico o separador válido
+      const diasLaborados = parseFloat(
+        (document.getElementById("diasLaborados").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      // Parsear salario quitando cualquier carácter no numérico o separador válido
+      const salario = parseFloat(
+        document.getElementById('salario').value.replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      console.log("Salario Bruto capturado:", salario);
       const salarioDiario = salario / 30;
       const salarioOrdinario = salarioDiario * diasLaborados;
-      
-      const horasExtra = parseCurrency(document.getElementById("horasExtraCantidad").value);
-      const festivos = parseCurrency(document.getElementById("festivoCantidad").value);
-      
+      // Permitir decimales en horas extra y festivos (quitando cualquier carácter no numérico o separador válido)
+      const horasExtra = parseFloat(
+        (document.getElementById("horasExtraCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      const festivos = parseFloat(
+        (document.getElementById("festivoCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+      ) || 0;
+      // Cálculo de montos
       const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
+      // Día festivo debe pagarse doble por ley en Costa Rica
       const montoFestivo = (salario / 30) * festivos * 2;
-      
-      // Recolectar deducciones
+      // Deducciones adicionales
       let totalDeducciones = 0;
+      document.querySelectorAll('.monto-deduccion').forEach(input => {
+        const val = parseFloat((input.value || '0').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        totalDeducciones += val;
+      });
+      // Recolectar deducciones detalladas con descripción y monto
       let deduccionesHTML = '';
       document.querySelectorAll('.deduccion-row').forEach(row => {
         const descripcion = row.querySelector('.detalle-deduccion')?.value || '';
-        const fechaDeduccionRaw = row.querySelector('.fecha-deduccion')?.value || '';
-        const monto = parseCurrency(row.querySelector('.monto-deduccion')?.value);
-        
-        let fechaDeduccionFormateada = '';
-        if (fechaDeduccionRaw) {
-          const [a, m, d] = fechaDeduccionRaw.split("-");
-          fechaDeduccionFormateada = `${d}/${m}/${a.slice(2)}`;
-        }
-        
-        if (descripcion && monto > 0) {
-          totalDeducciones += monto;
+        const monto = row.querySelector('.monto-deduccion')?.value || '0';
+        // Limpiar caracteres no numéricos antes de parsear
+        if (descripcion && monto) {
+          const montoLimpio = parseFloat(monto.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
           deduccionesHTML += `
             <tr>
               <td style="padding:4px 5px;">${descripcion}</td>
-              <td style="text-align:center; padding:4px 5px;">${fechaDeduccionFormateada || ''}</td>
-              <td style="text-align:right; padding:4px 5px;">₡${Math.round(monto).toLocaleString('es-CR')}</td>
+              <td style="text-align:center; padding:4px 5px;"></td>
+              <td style="text-align:right; padding:4px 5px;">₡${montoLimpio.toLocaleString('es-CR')}</td>
             </tr>
           `;
         }
       });
-      
-      // Recolectar otros ingresos
-      let totalOtrosIngresos = 0;
-      let otrosIngresosHTML = '';
-      document.querySelectorAll('.otros-ingresos-row').forEach(row => {
-        const descripcion = row.querySelector('.descripcion-ingreso')?.value || '';
-        const fechaIngresoRaw = row.querySelector('.fecha-ingreso')?.value || '';
-        const monto = parseCurrency(row.querySelector('.monto-ingreso')?.value);
-        
-        let fechaIngresoFormateada = '';
-        if (fechaIngresoRaw) {
-          const [a, m, d] = fechaIngresoRaw.split("-");
-          fechaIngresoFormateada = `${d}/${m}/${a.slice(2)}`;
-        } else {
-          fechaIngresoFormateada = fechaPago;
-        }
-        
-        if (descripcion && monto > 0) {
-          totalOtrosIngresos += monto;
-          otrosIngresosHTML += `
+      // Bonificaciones/otros ingresos (antiguo)
+      let totalBonificaciones = 0;
+      document.querySelectorAll('.monto-bonificacion').forEach(input => {
+        const val = parseFloat((input.value || '0').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        totalBonificaciones += val;
+      });
+      // Recoger también descripción de bonificación si existe
+      document.querySelectorAll('.bonificacion-row').forEach(row => {
+        const descripcion = row.querySelector('.detalle-bonificacion')?.value?.trim();
+        const montoStr = row.querySelector('.monto-bonificacion')?.value?.trim();
+        const montoLimpio = parseFloat((montoStr || '').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        if (descripcion && montoLimpio) {
+          otrosIngresosDetalle += `
             <tr>
-              <td style="padding:4px 5px;">${descripcion}</td>
-              <td style="text-align:center; padding:4px 5px;">${fechaIngresoFormateada}</td>
-              <td style="text-align:right; padding:4px 5px;">₡${Math.round(monto).toLocaleString('es-CR')}</td>
+              <td>${descripcion}</td>
+              <td>${fechaHoy}</td>
+              <td style="text-align:right;">₡${montoLimpio.toLocaleString('es-CR')}</td>
             </tr>
           `;
         }
       });
-      
-      const baseCCSS = salarioOrdinario + montoExtra + montoFestivo;
-      const deduccionCCSS = Math.floor(baseCCSS * 0.1067);
-      const salarioBrutoTotal = salarioOrdinario + montoExtra + montoFestivo + totalOtrosIngresos;
-      const salarioNeto = Math.round(salarioBrutoTotal - deduccionCCSS - totalDeducciones);
-      
-      const consecutivo = obtenerConsecutivo();
-      document.getElementById("consecutivo_envio").value = consecutivo;
-      
-      let fechaFestivo = document.getElementById("fecha_festivo").value || '';
-      let fechaFestivoFormateada = "";
-      if (fechaFestivo && festivos > 0) {
-        const [a, m, d] = fechaFestivo.split("-");
-        fechaFestivoFormateada = `${d}/${m}/${a.slice(2)}`;
+
+      // ====== BLOQUE: Parsear el campo de otros ingresos manual si existe ======
+      // Eliminar cualquier carácter que no sea número, punto o coma
+      const otrosIngresosRaw = document.getElementById("otrosIngresos")?.value || "";
+      // Limpiar cualquier carácter que no sea número, punto o coma, y convertir coma decimal a punto
+      const otrosIngresos = parseFloat(otrosIngresosRaw.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+
+      // ====== BLOQUE NUEVO: Recopilar otros ingresos de inputs con clase .otros-ingresos-row ======
+      let otrosIngresosDetalle = '';
+      let totalOtrosIngresos = 0;
+      // fechaHoy para mostrar en la tabla
+      let fechaHoy = fechaPago;
+      const otrosIngresosInputs = document.querySelectorAll('.otros-ingresos-row');
+      otrosIngresosInputs.forEach(row => {
+        const descripcion = row.querySelector('.descripcion-ingreso')?.value.trim();
+        const montoStr = row.querySelector('.monto-ingreso')?.value.trim();
+        const montoLimpio = parseFloat((montoStr || '').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+        if (descripcion && montoLimpio) {
+          totalOtrosIngresos += montoLimpio;
+          otrosIngresosDetalle += `
+            <tr>
+              <td>${descripcion}</td>
+              <td>${fechaHoy}</td>
+              <td style="text-align:right;">₡${montoLimpio.toLocaleString('es-CR')}</td>
+            </tr>
+          `;
+        }
+      });
+      // Si hay un valor en el campo manual de otrosIngresos, agréguelo también
+      if (!isNaN(otrosIngresos) && otrosIngresos > 0) {
+        totalOtrosIngresos += otrosIngresos;
+        otrosIngresosDetalle += `
+          <tr>
+            <td>Otros ingresos</td>
+            <td>${fechaHoy}</td>
+            <td style="text-align:right;">₡${otrosIngresos.toLocaleString('es-CR')}</td>
+          </tr>
+        `;
       }
-      
+      // ====== FIN BLOQUE NUEVO ======
+
+      // CCSS: Solo salario ordinario, monto extra y monto festivo están sujetos a CCSS (no otros ingresos)
+      const baseCCSS = salarioOrdinario + montoExtra + montoFestivo;
+      // deduccionCCSS se calcula sobre baseCCSS, redondeando hacia abajo
+      const deduccionCCSS = Math.floor(baseCCSS * 0.1067);
+      // Salario bruto total incluye otros ingresos
+      const salarioBrutoTotal = salarioOrdinario + montoExtra + montoFestivo + totalBonificaciones + totalOtrosIngresos;
+      // Salario neto
+      const salarioNeto = Math.round(salarioOrdinario + montoExtra + montoFestivo + totalBonificaciones + totalOtrosIngresos - deduccionCCSS - totalDeducciones);
+      // Formato monto
+      function fmt(n) {
+        return `₡${Number(n).toLocaleString("es-CR", {
+          style: "currency",
+          currency: "CRC",
+          maximumFractionDigits: 0,
+          minimumFractionDigits: 0
+        })}`;
+      }
+      // Obtener consecutivo antes de mostrar el resultado
+      const consecutivo = obtenerConsecutivo();
+      // --- FORMATEO DE FECHA FESTIVO ---
+      let fechaFestivo = document.getElementById("fecha_festivo").value || '';
+      let fechaFestivoFormateada = "N/A";
+      if (fechaFestivo) {
+        fechaFestivoFormateada = new Date(fechaFestivo).toLocaleDateString("es-CR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "2-digit"
+        });
+      }
+      // --- FORMATEO DE FECHA DE PAGO (para tabla de conceptos de otros ingresos) ---
+      let fechaPagoFormateada = fechaPago;
+      if (rawFecha) {
+        // ya se formatea arriba como dd/mm/yy
+        fechaPagoFormateada = fechaPago;
+      }
+      // --- FORMATEO PARA BONIFICACIONES/OTROS INGRESOS DINÁMICOS NUEVO ---
+      // Recoger la bonificación principal si existe
+      let nombreBonificacion = "";
+      let montoBonificacion = 0;
+      const bonificacionRows = document.querySelectorAll('.bonificacion-row');
+      if (bonificacionRows.length > 0) {
+        // Solo mostrar la primera bonificación como principal
+        const row = bonificacionRows[0];
+        nombreBonificacion = row.querySelector('.detalle-bonificacion')?.value?.trim() || "";
+        // Limpiar cualquier carácter no numérico antes de parsear
+        const montoStr = row.querySelector('.monto-bonificacion')?.value || "0";
+        montoBonificacion = parseFloat(montoStr.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+      }
+      // --- HTML DEL COMPROBANTE ---
+      // Determinar periodo de quincena según fecha de pago y nombre del mes dinámico
       let periodoQuincena = '';
       let nombreMes = '';
       if (rawFecha) {
         const fecha = new Date(rawFecha);
         const dia = fecha.getDate();
         periodoQuincena = dia >= 1 && dia <= 15 ? 'Primera Quincena' : 'Segunda Quincena';
+        // Obtener el nombre del mes en español, con la primera letra en mayúscula
         nombreMes = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fecha);
         nombreMes = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
       }
-      
       const resultadoHTML = `
         <div style="max-width:530px; margin:0 auto; font-family:'Segoe UI',sans-serif; background:#fff; border-radius:10px; border:1px solid #ccc; padding:32px 24px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.07); page-break-inside:avoid; min-height:auto; height:auto;">
           <div style="text-align:center; margin-bottom:18px;">
@@ -1193,8 +793,10 @@
               <td style="font-weight:600;">Fecha de pago:</td>
               <td>${fechaPago}</td>
             </tr>
+            <tr>
+            </tr>
           </table>
-          <div style="margin-bottom:12px;">
+          <div>
             <div><strong>Número de Comprobante:</strong> ${consecutivo}</div>
             <div><strong>Período:</strong> ${periodoQuincena}${nombreMes ? ' de ' + nombreMes : ''}</div>
           </div>
@@ -1209,25 +811,34 @@
             <tbody>
               <tr>
                 <td style="padding:4px 5px;">Salario Ordinario (${diasLaborados.toFixed(2)} días)</td>
-                <td style="text-align:center; padding:4px 5px;">${fechaPago}</td>
+                <td style="text-align:center; padding:4px 5px;">${fechaPagoFormateada}</td>
                 <td style="text-align:right; padding:4px 5px;">₡${Math.round(salarioOrdinario).toLocaleString('es-CR')}</td>
               </tr>
-              ${horasExtra > 0 ? `<tr>
-                <td style="padding:4px 5px;">Horas Extra (${horasExtra} hrs)</td>
-                <td style="text-align:center; padding:4px 5px;">${fechaPago}</td>
+              <tr>
+                <td style="padding:4px 5px;">Horas Extra</td>
+                <td style="text-align:center; padding:4px 5px;">${horasExtra > 0 ? fechaPagoFormateada : ''}</td>
                 <td style="text-align:right; padding:4px 5px;">₡${Math.round(montoExtra).toLocaleString('es-CR')}</td>
-              </tr>` : ''}
-              ${festivos > 0 ? `<tr>
-                <td style="padding:4px 5px;">Día Festivo / Extra (${festivos} días)</td>
-                <td style="text-align:center; padding:4px 5px;">${fechaFestivoFormateada || fechaPago}</td>
+              </tr>
+              <tr>
+                <td style="padding:4px 5px;">Día Festivo / Extra</td>
+                <td style="text-align:center; padding:4px 5px;">${festivos > 0 ? fechaFestivoFormateada : ''}</td>
                 <td style="text-align:right; padding:4px 5px;">₡${Math.round(montoFestivo).toLocaleString('es-CR')}</td>
-              </tr>` : ''}
-              ${otrosIngresosHTML}
-              ${totalOtrosIngresos > 0 ? `<tr>
+              </tr>
+              ${
+                (montoBonificacion > 0 && nombreBonificacion)
+                  ? `<tr>
+                      <td style="padding:4px 5px;">${nombreBonificacion}</td>
+                      <td style="text-align:center; padding:4px 5px;">${fechaPagoFormateada}</td>
+                      <td style="text-align:right; padding:4px 5px;">₡${montoBonificacion.toLocaleString('es-CR')}</td>
+                    </tr>`
+                  : ''
+              }
+              ${otrosIngresosDetalle}
+              <tr>
                 <td colspan="3" style="padding:0 5px 4px 5px;">
                   <small>*Otros ingresos no están sujetos a deducciones de ley</small>
                 </td>
-              </tr>` : ''}
+              </tr>
               <tr>
                 <td style="padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">Salario bruto total</td>
                 <td style="padding:4px 5px; border-top:1px solid #bfaee5;"></td>
@@ -1250,54 +861,63 @@
               </tr>
             </tbody>
           </table>
-          <div style="margin-top: 20px; margin-bottom: 30px;">
+          <!-- Área de firma alineada más a la izquierda -->
+          <div style="margin-top: 0px; margin-bottom: 30px;">
             <p style="text-align: left; padding-left: 40px;"><strong>Firma de recibido:</strong></p>
             <br><br>
           </div>
+          <!-- Nota debajo del borde inferior izquierdo del comprobante -->
+          <div style="text-align: left; padding-left: 20px; margin-top: 10px;">
+          </div>
         </div>
       `;
-      
       const resultadoDiv = document.getElementById("recibo");
       resultadoDiv.innerHTML = resultadoHTML;
-      
+      // Agregar nota si existe (NO DUPLICAR fuera del cuadro principal, solo dentro del cuadro)
       const nota = document.getElementById('nota').value;
       if (nota) {
-        const notaHtml = `<div style="text-align:left; font-family:'Aptos','Segoe UI',sans-serif; margin-top:8px; padding:0 24px;"><strong>Nota:</strong> ${nota}</div>`;
+        // Para mantener la fuente "Aptos" o "Segoe UI" como fallback:
+        const notaHtml = `<div style="text-align:left; font-family:'Aptos','Segoe UI',sans-serif; margin-top:8px;"><strong>Nota:</strong> ${nota}</div>`;
+        // Insertar antes del último </div> del resultadoHTML (que es el cuadro principal)
         resultadoDiv.innerHTML = resultadoDiv.innerHTML.replace(/<\/div>\s*$/, notaHtml + '</div>');
       }
-      
       resultadoDiv.style.display = "block";
       document.getElementById("botonPdf").style.display = "block";
-      
-      window.scrollTo({ top: document.getElementById("boleta").offsetTop - 20, behavior: 'smooth' });
     }
-
+    // Deducciones y bonificaciones dinámicas
     function agregarDeduccion() {
       const container = document.getElementById('deduccionesContainer');
+      const idx = container.children.length;
       const div = document.createElement('div');
-      div.className = 'deduccion-row dynamic-row';
+      div.className = 'deduccion-row';
+      div.style.display = 'flex';
+      div.style.gap = '8px';
+      div.style.marginBottom = '8px';
       div.innerHTML = `
-        <input type="text" class="detalle-deduccion" placeholder="Descripción (ej: Impuesto sobre la renta)" style="flex:2;">
-        <input type="date" class="fecha-deduccion" placeholder="Fecha" style="flex:1;" title="Fecha de la deducción (opcional)">
-        <input type="text" class="monto-deduccion" placeholder="Monto" style="flex:1;" inputmode="decimal">
-        <button type="button" class="btn-danger" onclick="this.parentNode.remove();"><span>🗑️</span></button>
+        <input type="text" class="detalle-deduccion" placeholder="Por ejemplo, impuesto sobre la renta, etc." style="flex:2;" list="historialDetalleDeduccion">
+        <input type="date" class="fecha-deduccion" placeholder="Fecha de deducción" style="flex:1.1;" title="Fecha de esta deducción (opcional)">
+        <input type="text" class="monto-deduccion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal">
+        <button type="button" onclick="this.parentNode.remove();">🗑️</button>
+      `;
+      container.appendChild(div);
+    }
+    function agregarBonificacion() {
+      const container = document.getElementById('bonificacionesContainer');
+      const idx = container.children.length;
+      const div = document.createElement('div');
+      div.className = 'bonificacion-row';
+      div.style.display = 'flex';
+      div.style.gap = '8px';
+      div.style.marginBottom = '8px';
+      div.innerHTML = `
+        <input type="text" class="detalle-bonificacion" placeholder="Detalle bonificación" style="flex:2;" list="historialDetalleBonificacion">
+        <input type="text" class="monto-bonificacion form-control" placeholder="Monto" style="flex:1;" inputmode="decimal">
+        <button type="button" onclick="this.parentNode.remove();">🗑️</button>
       `;
       container.appendChild(div);
     }
 
-    function agregarOtroIngreso() {
-      const container = document.getElementById('otrosIngresosContainer');
-      const div = document.createElement('div');
-      div.className = 'otros-ingresos-row dynamic-row';
-      div.innerHTML = `
-        <input type="text" class="descripcion-ingreso" placeholder="Descripción (ej: Bono, Propina, etc.)" style="flex:2;">
-        <input type="date" class="fecha-ingreso" placeholder="Fecha" style="flex:1;" title="Fecha del ingreso (opcional)">
-        <input type="text" class="monto-ingreso" placeholder="Monto" style="flex:1;" inputmode="decimal">
-        <button type="button" class="btn-danger" onclick="this.parentNode.remove();"><span>🗑️</span></button>
-      `;
-      container.appendChild(div);
-    }
-
+    // Formatea un input numérico con separador de miles (es-CR)
     function formatNumberInput(input) {
       let value = input.value.replace(/[^\d]/g, '');
       if (!value) {
@@ -1307,14 +927,153 @@
       input.value = new Intl.NumberFormat('es-CR').format(Number(value));
     }
 
+    // Desformatea el input numérico, eliminando puntos y comas (para obtener el valor numérico plano)
     function unformatNumberInput(input) {
       input.value = input.value.replace(/\./g, '').replace(/,/g, '');
     }
 
+    // Inicializar un campo de deducción y uno de bonificación por defecto
+    window.addEventListener('DOMContentLoaded', () => {
+      // ...historial, cédula, etc...
+      fieldsWithHistory.forEach(({id, storageKey}) => {
+        setupFieldHistory(id, storageKey);
+      });
+      document.getElementById('idEmpleado').addEventListener('blur', validarCedula);
+      // Inicializar deducción y bonificación 1
+      agregarDeduccion();
+      agregarBonificacion();
+      // Aplicar formato de miles solo al campo salario al cargar y desenformatear al salir
+      const salarioInput = document.getElementById('salario');
+      if (salarioInput) {
+        salarioInput.addEventListener('input', function () {
+          formatNumberInput(this);
+        });
+        salarioInput.addEventListener('blur', function () {
+          unformatNumberInput(this);
+        });
+      }
+      // Calcular extras/festivos por si ya hay valores
+      calculateExtrasAndFestivos();
+    });
+
+    // Autocomplete history management
+    const fieldsWithHistory = [
+      {id: 'correoEmpresa', storageKey: 'historialCorreoEmpresa'},
+      {id: 'direccionEmpresa', storageKey: 'historialDireccionEmpresa'},
+      {id: 'paisEmpresa', storageKey: 'historialPaisEmpresa'},
+      {id: 'cedulaEmpresa', storageKey: 'historialCedulaEmpresa'},
+      {id: 'nombreEmpleado', storageKey: 'historialNombreEmpleado'},
+      {id: 'apellidoEmpleado', storageKey: 'historialApellidoEmpleado'},
+      {id: 'idEmpleado', storageKey: 'historialIdEmpleado'},
+      {id: 'correoEmpleado', storageKey: 'historialCorreoEmpleado'},
+      {id: 'salario', storageKey: 'historialSalario'},
+      {id: 'deducciones', storageKey: 'historialDeducciones'},
+      {id: 'bonificaciones', storageKey: 'historialBonificaciones'},
+      {id: 'detalleDeduccion', storageKey: 'historialDetalleDeduccion'},
+      {id: 'detalleBonificacion', storageKey: 'historialDetalleBonificacion'}
+    ];
+
+    function loadHistory(storageKey) {
+      const data = localStorage.getItem(storageKey);
+      if (data) {
+        try {
+          return JSON.parse(data);
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    }
+
+    function saveHistory(storageKey, values) {
+      localStorage.setItem(storageKey, JSON.stringify(values));
+    }
+
+    function updateDatalistOptions(storageKey, datalistId) {
+      const datalist = document.getElementById(datalistId);
+      if (!datalist) return;
+      datalist.innerHTML = '';
+      const values = loadHistory(storageKey);
+      values.forEach(value => {
+        if(value !== '') {
+          const option = document.createElement('option');
+          option.value = value;
+          datalist.appendChild(option);
+        }
+      });
+    }
+
+    function addValueToHistory(storageKey, value) {
+      if (!value) return;
+      let values = loadHistory(storageKey);
+      // Remove duplicates
+      values = values.filter(v => v !== value);
+      // Add to front
+      values.unshift(value);
+      // Keep max 6
+      if (values.length > 6) {
+        values = values.slice(0, 6);
+      }
+      saveHistory(storageKey, values);
+    }
+
+    function setupFieldHistory(fieldId, storageKey) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      updateDatalistOptions(storageKey, storageKey);
+      field.addEventListener('change', () => {
+        // Only add if field is not readonly
+        if (!field.readOnly) {
+          addValueToHistory(storageKey, field.value.trim());
+          updateDatalistOptions(storageKey, storageKey);
+        }
+      });
+    }
+
+    function validarCedula() {
+      const idField = document.getElementById('idEmpleado');
+      const idValue = idField.value.trim();
+
+      if (idValue !== '') {
+        const soloNumeros = idValue.replace(/\D/g, '');
+        if (!(soloNumeros.length === 9 || soloNumeros.length === 11 || soloNumeros.length === 12)) {
+          alert('El número de cédula o DIMEX debe tener 9, 11 o 12 dígitos.');
+          idField.focus();
+        }
+      }
+    }
+
+  // (Función enviarBoletaPorCorreo eliminada)
+</script>
+  <script>
     function imprimirBoleta() {
       window.print();
     }
+</script>
+  <!-- Eliminado Flatpickr y funciones relacionadas con calendario de días laborados -->
+  <!-- Script de Google Sign-In y manejo de credenciales -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function handleCredentialResponse(response) {
+      const responsePayload = parseJwt(response.credential);
+      const email = responsePayload.email;
+      const name = responsePayload.name;
+      alert("Bienvenido " + name + "!");
 
+      // Aquí puedes usar `email` para enviar el PDF o mostrarlo en la UI.
+    }
+
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      return JSON.parse(jsonPayload);
+    }
+  </script>
+  <script>
     function enviarBoleta() {
       const email = document.getElementById("correoEmpleado")?.value || "";
       const nombre = document.getElementById("nombre_envio")?.value || "";
@@ -1347,7 +1106,7 @@
         email,
         asunto: `Boleta de Pago - ${nombreCompleto}`,
         nombreArchivo: `Boleta_${consecutivo}_${nombreCompleto}.pdf`,
-        cuerpo: `Estimado/a ${nombreCompleto},\n\nAdjunto encontrarás tu boleta de pago correspondiente.\n\nSaludos cordiales,\nOakberry Costa Rica`
+        cuerpo: `Estimado/a ${nombreCompleto},\nAdjunto encontrarás tu boleta de pago.`
       };
 
       fetch("https://script.google.com/macros/s/AKfycbxAVofjU65K_pU-D2UYgHv31RlLOkL4BsqG940dSMDz3fj6TTKxdMonqmWU3aZ4z1e8/exec", {
@@ -1359,37 +1118,293 @@
       })
       .then(res => res.text())
       .then(data => {
-        alert("✅ Boleta enviada con éxito a " + email);
+        alert("✅ Boleta enviada con éxito");
       })
       .catch(err => {
         console.error("❌ Error al enviar:", err);
-        alert("❌ Error al enviar la boleta. Por favor intente nuevamente.");
+        alert("❌ Error al enviar la boleta");
       });
     }
-
-    function handleCredentialResponse(response) {
-      const responsePayload = parseJwt(response.credential);
-      const email = responsePayload.email;
-      const name = responsePayload.name;
-      alert("Bienvenido " + name + "!");
-    }
-
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    }
-
-    window.onload = function() {
-      // No llamar a fetchCSVData aquí, se llama después del login
-      if (checkSession()) {
-        agregarDeduccion();
-        agregarOtroIngreso();
-      }
-    };
   </script>
+  <script>
+function generarBoletaPanama() {
+  // DATOS
+  const empresa = document.getElementById("empresa").value || '';
+  const cedulaEmpresa = document.getElementById("cedulaEmpresa").value || '';
+  
+  let nombreColab = '';
+  const colaboradorSelect = document.getElementById("colaborador");
+  if (colaboradorSelect && colaboradoresData.length > 0 && colaboradorSelect.value !== "" && colaboradoresData[colaboradorSelect.value]) {
+    const c = colaboradoresData[colaboradorSelect.value];
+    nombreColab = (c.nombre || '') + " " + (c.apellido || '');
+  } else {
+    nombreColab = (document.getElementById("nombre")?.value || '') + " " + (document.getElementById("apellidoEmpleado").value || '');
+  }
+  
+  const cedulaColab = document.getElementById("idEmpleado").value || '';
+  
+  // ==== FORMATEO DE FECHA DE PAGO DD/MM/YY ====
+  const rawFecha = document.getElementById("fechaPago").value || '';
+  let fechaPago = "";
+  if (rawFecha) {
+    const [a, m, d] = rawFecha.split("-");
+    fechaPago = `${d}/${m}/${a.slice(2)}`;
+  }
+  
+  // Días laborados y salario
+  const diasLaborados = parseFloat(
+    (document.getElementById("diasLaborados").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+  ) || 0;
+  
+  const salario = parseFloat(
+    document.getElementById('salario').value.replace(/[^\d,\.]/g, '').replace(',', '.')
+  ) || 0;
+  
+  console.log("Salario Bruto capturado (Panamá):", salario);
+  
+  const salarioDiario = salario / 30;
+  const salarioOrdinario = salarioDiario * diasLaborados;
+  
+  // Horas extra y festivos
+  const horasExtra = parseFloat(
+    (document.getElementById("horasExtraCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+  ) || 0;
+  
+  const festivos = parseFloat(
+    (document.getElementById("festivoCantidad").value || "0").replace(/[^\d,\.]/g, '').replace(',', '.')
+  ) || 0;
+  
+  // Cálculo de montos extras
+  const montoExtra = (salarioDiario / 8) * 1.5 * horasExtra;
+  const montoFestivo = (salario / 30) * festivos * 2;
+  
+  // Deducciones adicionales del usuario
+  let totalDeducciones = 0;
+  let deduccionesHTML = '';
+  document.querySelectorAll('.deduccion-row').forEach(row => {
+    const descripcion = row.querySelector('.detalle-deduccion')?.value || '';
+    const monto = row.querySelector('.monto-deduccion')?.value || '0';
+    if (descripcion && monto) {
+      const montoLimpio = parseFloat(monto.replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+      totalDeducciones += montoLimpio;
+      deduccionesHTML += `
+        <tr>
+          <td style="padding:4px 5px;">${descripcion}</td>
+          <td style="text-align:center; padding:4px 5px;"></td>
+          <td style="text-align:right; padding:4px 5px;">$${montoLimpio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+      `;
+    }
+  });
+  
+  // Otros ingresos / Bonificaciones
+  let totalOtrosIngresos = 0;
+  let otrosIngresosDetalle = '';
+  let fechaPagoFormateada = fechaPago;
+  
+  document.querySelectorAll('.bonificacion-row').forEach(row => {
+    const descripcion = row.querySelector('.detalle-bonificacion')?.value?.trim();
+    const montoStr = row.querySelector('.monto-bonificacion')?.value?.trim();
+    const montoLimpio = parseFloat((montoStr || '').replace(/[^\d,\.]/g, '').replace(',', '.')) || 0;
+    if (descripcion && montoLimpio) {
+      totalOtrosIngresos += montoLimpio;
+      otrosIngresosDetalle += `
+        <tr>
+          <td style="padding:4px 5px;">${descripcion}</td>
+          <td style="text-align:center; padding:4px 5px;">${fechaPagoFormateada}</td>
+          <td style="text-align:right; padding:4px 5px;">$${montoLimpio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+        </tr>
+      `;
+    }
+  });
+  
+  // === CÁLCULOS DE DEDUCCIONES PANAMÁ ===
+  // Base para deducciones: salario ordinario + horas extra + festivos
+  const baseDeduccionesPanama = salarioOrdinario + montoExtra + montoFestivo;
+  
+  // CSS: 9.75% del salario base
+  const deduccionCSS = Math.round(baseDeduccionesPanama * 0.0975 * 100) / 100;
+  
+  // Seguro Educativo: 1.25% del salario base
+  const deduccionSeguroEducativo = Math.round(baseDeduccionesPanama * 0.0125 * 100) / 100;
+  
+  // Impuesto sobre la Renta: 11% del salario neto (después de CSS y Seguro Educativo)
+  const salarioParaISR = baseDeduccionesPanama - deduccionCSS - deduccionSeguroEducativo;
+  const deduccionISR = Math.round(salarioParaISR * 0.11 * 100) / 100;
+  
+  // Total deducciones legales
+  const totalDeduccionesLegales = deduccionCSS + deduccionSeguroEducativo + deduccionISR;
+  
+  console.log("=== DEDUCCIONES PANAMÁ ===");
+  console.log("Base para deducciones:", baseDeduccionesPanama);
+  console.log("CSS (9.75%):", deduccionCSS);
+  console.log("Seguro Educativo (1.25%):", deduccionSeguroEducativo);
+  console.log("Base para ISR:", salarioParaISR);
+  console.log("ISR (11%):", deduccionISR);
+  console.log("Total deducciones legales:", totalDeduccionesLegales);
+  
+  // Salario bruto total (incluye otros ingresos)
+  const salarioBrutoTotal = salarioOrdinario + montoExtra + montoFestivo + totalOtrosIngresos;
+  
+  // Salario neto = Salario bruto - deducciones legales - deducciones adicionales
+  const salarioNeto = Math.round((salarioBrutoTotal - totalDeduccionesLegales - totalDeducciones) * 100) / 100;
+  
+  // Obtener consecutivo
+  const consecutivo = obtenerConsecutivo();
+  
+  // --- FORMATEO DE FECHA FESTIVO ---
+  let fechaFestivo = document.getElementById("fecha_festivo").value || '';
+  let fechaFestivoFormateada = "N/A";
+  if (fechaFestivo) {
+    const [af, mf, df] = fechaFestivo.split("-");
+    fechaFestivoFormateada = `${df}/${mf}/${af.slice(2)}`;
+  }
+  
+  // Periodo de quincena
+  let periodoQuincena = '';
+  let nombreMes = '';
+  if (rawFecha) {
+    const fecha = new Date(rawFecha);
+    const dia = fecha.getDate();
+    periodoQuincena = dia >= 1 && dia <= 15 ? 'Primera Quincena' : 'Segunda Quincena';
+    nombreMes = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(fecha);
+    nombreMes = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+  }
+  
+  // === HTML BOLETA PANAMÁ ===
+  const resultadoHTML = `
+    <div style="max-width:530px; margin:0 auto; font-family:'Segoe UI',sans-serif; background:#fff; border-radius:10px; border:1px solid #ccc; padding:32px 24px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.07); page-break-inside:avoid; min-height:auto; height:auto;">
+      <div style="text-align:center; margin-bottom:18px;">
+        <div style="text-align:center; font-size: 30px; font-weight: bold; color: #4B0082; margin-bottom: 8px;">
+          OAKBERRY
+        </div>
+        <span style="font-size:22px; font-weight:700; letter-spacing:1px; color:#2f006e;">COMPROBANTE DE PAGO</span>
+      </div>
+      
+      <table style="width:100%; margin-bottom:12px; border:none; font-size:15px;">
+        <tr>
+          <td style="font-weight:600; width:38%;">Empresa:</td>
+          <td style="width:62%;">${empresa}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">RUC:</td>
+          <td>${cedulaEmpresa}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Colaborador:</td>
+          <td>${nombreColab}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Cédula:</td>
+          <td>${cedulaColab}</td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">Fecha de pago:</td>
+          <td>${fechaPago}</td>
+        </tr>
+      </table>
+      
+      <div>
+        <div><strong>Número de Comprobante:</strong> ${consecutivo}</div>
+        <div><strong>Período:</strong> ${periodoQuincena}${nombreMes ? ' de ' + nombreMes : ''}</div>
+      </div>
+      
+      <table style="width:100%; border-collapse:collapse; font-size:15px; margin-bottom:18px;">
+        <thead>
+          <tr style="background:#E9E4F3; color:#2f006e; border-top:1px solid #bfaee5; border-bottom:1px solid #bfaee5;">
+            <th style="text-align:left; padding:6px 5px; font-weight:600;">Concepto</th>
+            <th style="text-align:center; padding:6px 5px; font-weight:600;">Fecha</th>
+            <th style="text-align:right; padding:6px 5px; font-weight:600;">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:4px 5px;">Salario Ordinario (${diasLaborados.toFixed(2)} días)</td>
+            <td style="text-align:center; padding:4px 5px;">${fechaPagoFormateada}</td>
+            <td style="text-align:right; padding:4px 5px;">$${salarioOrdinario.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 5px;">Horas Extra</td>
+            <td style="text-align:center; padding:4px 5px;">${horasExtra > 0 ? fechaPagoFormateada : ''}</td>
+            <td style="text-align:right; padding:4px 5px;">$${montoExtra.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 5px;">Día Festivo / Extra</td>
+            <td style="text-align:center; padding:4px 5px;">${festivos > 0 ? fechaFestivoFormateada : ''}</td>
+            <td style="text-align:right; padding:4px 5px;">$${montoFestivo.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          ${otrosIngresosDetalle}
+          ${totalOtrosIngresos > 0 ? `
+          <tr>
+            <td colspan="3" style="padding:0 5px 4px 5px;">
+              <small>*Otros ingresos no están sujetos a deducciones de ley</small>
+            </td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">Salario bruto total</td>
+            <td style="padding:4px 5px; border-top:1px solid #bfaee5;"></td>
+            <td style="text-align:right; padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">
+              $${salarioBrutoTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 5px;">CSS (9.75%)</td>
+            <td style="text-align:center; padding:4px 5px;"></td>
+            <td style="text-align:right; padding:4px 5px;">$${deduccionCSS.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 5px;">Seguro Educativo (1.25%)</td>
+            <td style="text-align:center; padding:4px 5px;"></td>
+            <td style="text-align:right; padding:4px 5px;">$${deduccionSeguroEducativo.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 5px;">Impuesto sobre la Renta (11%)</td>
+            <td style="text-align:center; padding:4px 5px;"></td>
+            <td style="text-align:right; padding:4px 5px;">$${deduccionISR.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          ${deduccionesHTML}
+          <tr>
+            <td style="padding:4px 5px; font-weight:600; border-top:1px solid #bfaee5;">Salario neto total</td>
+            <td style="padding:4px 5px; border-top:1px solid #bfaee5;"></td>
+            <td style="text-align:right; padding:4px 5px; font-weight:700; border-top:1px solid #bfaee5; color:#2f006e;">
+              $${salarioNeto.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 0px; margin-bottom: 30px;">
+        <p style="text-align: left; padding-left: 40px;"><strong>Firma de recibido:</strong></p>
+        <br><br>
+      </div>
+    </div>
+  `;
+  
+  const resultadoDiv = document.getElementById("recibo");
+  resultadoDiv.innerHTML = resultadoHTML;
+  
+  // Agregar nota si existe
+  const nota = document.getElementById('nota').value;
+  if (nota) {
+    const notaHtml = `<div style="text-align:left; font-family:'Aptos','Segoe UI',sans-serif; margin-top:8px;"><strong>Nota:</strong> ${nota}</div>`;
+    resultadoDiv.innerHTML = resultadoDiv.innerHTML.replace(/<\/div>\s*$/, notaHtml + '</div>');
+  }
+  
+  resultadoDiv.style.display = "block";
+  document.getElementById("botonPdf").style.display = "block";
+}
+</script>
 </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </html>
+  <script>
+    function handleLogin() {
+      // Puedes personalizar este método para iniciar el login de Google programáticamente
+      // Por ejemplo, mostrar el widget de Google o redirigir/abrir el popup.
+      // Aquí solo se muestra un alert como placeholder.
+      alert("Funcionalidad de login con Google pendiente de implementación.");
+    }
+  </script>
