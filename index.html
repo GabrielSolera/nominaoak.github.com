@@ -626,16 +626,40 @@
 
   <!-- SCRIPTS -->
   <script>
-    // ========== SISTEMA DE LOGIN ==========
+    // ========== SISTEMA DE LOGIN CON GOOGLE SHEETS ==========
     let sessionCheckInterval = null;
     const SESSION_DURATION = 30 * 60 * 1000; // 30 minutos en milisegundos
+    let validUsers = {}; // Almacenará los usuarios cargados desde Google Sheets
     
-    // Credenciales hardcodeadas (en producción deberías usar un backend real)
-    const VALID_CREDENTIALS = {
-      'admin': 'oakberry2025',
-      'gabriel': 'gabo123',
-      'usuario': 'demo123'
-    };
+    // Cargar usuarios desde Google Sheets
+    function loadUsersFromSheet() {
+      return fetch('https://docs.google.com/spreadsheets/d/13GOQHdrTdyO15smnX0z57qef4qVBCOMc98Rgx0hVRzc/export?format=csv&gid=1084708598')
+        .then(response => response.text())
+        .then(data => {
+          const rows = data.split('\n').map(row => row.split(','));
+          const dataRows = rows.slice(1); // Saltar encabezados
+          
+          validUsers = {};
+          dataRows.forEach(row => {
+            const username = row[0]?.trim(); // Columna A: Usuario
+            const password = row[1]?.trim(); // Columna B: Contraseña
+            const nombre = row[2]?.trim();   // Columna C: Nombre completo
+            
+            if (username && password) {
+              validUsers[username] = {
+                password: password,
+                nombre: nombre || username
+              };
+            }
+          });
+          
+          console.log('Usuarios cargados:', Object.keys(validUsers).length);
+        })
+        .catch(error => {
+          console.error('Error cargando usuarios:', error);
+          alert('Error al cargar usuarios. Por favor recarga la página.');
+        });
+    }
     
     function checkSession() {
       const sessionData = localStorage.getItem('oakberrySession');
@@ -646,7 +670,7 @@
           const sessionAge = currentTime - session.loginTime;
           
           if (sessionAge < SESSION_DURATION) {
-            showMainContent(session.username);
+            showMainContent(session.username, session.nombre);
             startSessionCheck();
             return true;
           } else {
@@ -673,21 +697,22 @@
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
       
-      // Verificar credenciales
-      if (VALID_CREDENTIALS[username] && VALID_CREDENTIALS[username] === password) {
+      // Verificar si el usuario existe y la contraseña es correcta
+      if (validUsers[username] && validUsers[username].password === password) {
         // Login exitoso
         const sessionData = {
           username: username,
+          nombre: validUsers[username].nombre,
           loginTime: new Date().getTime()
         };
         
         localStorage.setItem('oakberrySession', JSON.stringify(sessionData));
         
-        successMsg.textContent = '✓ Acceso concedido. Bienvenido!';
+        successMsg.textContent = '✓ Acceso concedido. Bienvenido ' + validUsers[username].nombre + '!';
         successMsg.style.display = 'block';
         
         setTimeout(() => {
-          showMainContent(username);
+          showMainContent(username, validUsers[username].nombre);
           startSessionCheck();
         }, 1000);
         
@@ -699,7 +724,7 @@
       }
     }
     
-    function showMainContent(username) {
+    function showMainContent(username, nombre) {
       document.getElementById('loginOverlay').classList.remove('active');
       document.getElementById('mainContent').classList.add('active');
       document.getElementById('userInfo').classList.add('active');
@@ -708,8 +733,8 @@
       const userName = document.getElementById('userName');
       const userAvatar = document.getElementById('userAvatar');
       
-      userName.textContent = username.charAt(0).toUpperCase() + username.slice(1);
-      userAvatar.textContent = username.charAt(0).toUpperCase();
+      userName.textContent = nombre || username;
+      userAvatar.textContent = (nombre || username).charAt(0).toUpperCase();
       
       // Cargar datos de colaboradores
       fetchCSVData();
@@ -774,11 +799,14 @@
       }
     }
     
-    // Verificar sesión al cargar
+    // Inicializar al cargar la página
     window.addEventListener('DOMContentLoaded', () => {
-      if (!checkSession()) {
-        document.getElementById('loginOverlay').classList.add('active');
-      }
+      // Primero cargar usuarios, luego verificar sesión
+      loadUsersFromSheet().then(() => {
+        if (!checkSession()) {
+          document.getElementById('loginOverlay').classList.add('active');
+        }
+      });
     });
     
     // ========== FIN SISTEMA DE LOGIN ==========
