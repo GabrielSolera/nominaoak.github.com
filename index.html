@@ -1034,7 +1034,7 @@
       });
       
       const baseCCSS = salarioOrdinario + montoExtra + montoFestivo;
-      const deduccionCCSS = Math.floor(baseCCSS * 0.1067);
+      const deduccionCCSS = Math.floor(baseCCSS * 0.1083);
       const salarioBrutoTotal = salarioOrdinario + montoExtra + montoFestivo + totalOtrosIngresos;
       const salarioNeto = Math.round(salarioBrutoTotal - deduccionCCSS - totalDeducciones);
       
@@ -1130,7 +1130,7 @@
                 </td>
               </tr>
               <tr>
-                <td style="padding:4px 5px;">Deducciones ley (CCSS 10.67%)</td>
+                <td style="padding:4px 5px;">Deducciones ley (CCSS 10.83%)</td>
                 <td style="text-align:center; padding:4px 5px;"></td>
                 <td style="text-align:right; padding:4px 5px;">₡${Math.round(deduccionCCSS).toLocaleString('es-CR')}</td>
               </tr>
